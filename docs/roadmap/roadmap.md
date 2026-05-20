@@ -121,6 +121,23 @@ Acceptance criteria:
 - Admin can download latest print asset.
 - Failed generation is visible through production status.
 
+## Phase 5.5: Admin Support and Device Management
+
+Tasks:
+
+- Add admin client list/create/detail screens. Done.
+- Add admin device support editing. Done.
+- Add admin device assign/reassign/unassign. Done.
+- Add admin device filters. Done.
+- Record audit logs for support actions. Done.
+
+Acceptance criteria:
+
+- Admin can create and inspect client businesses. Done.
+- Admin can edit device alias, target URL, and statuses. Done.
+- Admin can manually assign and unassign devices. Done.
+- Admin changes record `AuditLog` and `DeviceEvent`. Done.
+
 ## Phase 6: Metrics
 
 Tasks:

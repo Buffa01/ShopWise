@@ -4,6 +4,7 @@ import { AssetsService } from "../assets/assets.service";
 import { badRequest, forbidden } from "../../common/errors/http-errors";
 import { PrismaService } from "../../prisma/prisma.service";
 import { CodeGeneratorService } from "./code/code-generator.service";
+import type { UpdateAdminDeviceDto } from "./dto/update-admin-device.dto";
 import type { CreateDeviceBatchDto } from "./dto/create-device-batch.dto";
 import type { CreateDeviceDto } from "./dto/create-device.dto";
 import type { ClaimDeviceDto } from "./dto/claim-device.dto";
@@ -12,7 +13,17 @@ import type { UpdateClientDeviceDto } from "./dto/update-client-device.dto";
 
 const DEVICE_INCLUDE = {
   deviceType: true,
-  business: true,
+  business: {
+    include: {
+      owner: {
+        select: {
+          id: true,
+          name: true,
+          email: true
+        }
+      }
+    }
+  },
   batch: true
 } satisfies Prisma.DeviceInclude;
 
@@ -28,6 +39,7 @@ export class DevicesService {
     const where: Prisma.DeviceWhereInput = {};
 
     if (query.deviceTypeId) where.deviceTypeId = query.deviceTypeId;
+    if (query.businessId) where.businessId = query.businessId;
     if (query.productionStatus) where.productionStatus = query.productionStatus;
     if (query.assignmentStatus) where.assignmentStatus = query.assignmentStatus;
     if (query.operationalStatus) where.operationalStatus = query.operationalStatus;
@@ -151,6 +163,158 @@ export class DevicesService {
 
   getLatestPrintAssetFile(deviceId: string) {
     return this.assets.getLatestPrintAssetFile(deviceId);
+  }
+
+  async updateAdminDevice(id: string, dto: UpdateAdminDeviceDto, actorUserId: string) {
+    const device = await this.get(id);
+    const data: Prisma.DeviceUpdateInput = {};
+    const nextTargetUrl = dto.targetUrl !== undefined ? dto.targetUrl.trim() || null : device.targetUrl;
+    const nextAlias = dto.alias !== undefined ? dto.alias.trim() || null : device.alias;
+    const nextProductionStatus = dto.productionStatus ?? device.productionStatus;
+    let nextOperationalStatus = dto.operationalStatus ?? device.operationalStatus;
+
+    if (dto.alias !== undefined) {
+      data.alias = nextAlias;
+    }
+
+    if (dto.targetUrl !== undefined) {
+      data.targetUrl = nextTargetUrl;
+    }
+
+    if (dto.productionStatus !== undefined) {
+      data.productionStatus = dto.productionStatus;
+    }
+
+    if (dto.operationalStatus !== undefined) {
+      if (dto.operationalStatus === OperationalStatus.ACTIVE && !nextTargetUrl) {
+        throw badRequest("VALIDATION_ERROR", "Active devices require a target URL");
+      }
+
+      data.operationalStatus = dto.operationalStatus;
+    } else if (dto.targetUrl !== undefined && !nextTargetUrl && device.operationalStatus === OperationalStatus.ACTIVE) {
+      data.operationalStatus = OperationalStatus.INACTIVE;
+      nextOperationalStatus = OperationalStatus.INACTIVE;
+    }
+
+    await this.prisma.$transaction(async (tx) => {
+      await tx.device.update({
+        where: { id: device.id },
+        data
+      });
+
+      await this.recordAdminDeviceChange(tx, actorUserId, device.id, "ADMIN_DEVICE_UPDATE", device, {
+        alias: nextAlias,
+        targetUrl: nextTargetUrl,
+        productionStatus: nextProductionStatus,
+        operationalStatus: nextOperationalStatus,
+        businessId: device.businessId,
+        assignmentStatus: device.assignmentStatus
+      });
+
+      await tx.deviceEvent.create({
+        data: {
+          deviceId: device.id,
+          eventType: dto.operationalStatus || dto.productionStatus ? DeviceEventType.STATUS_CHANGE : DeviceEventType.CONFIG_UPDATE,
+          source: "SYSTEM",
+          metadata: {
+            actorUserId,
+            fields: Object.keys(dto)
+          }
+        }
+      });
+    });
+
+    return this.get(device.id);
+  }
+
+  async assignAdminDevice(id: string, businessId: string, actorUserId: string) {
+    const [device, business] = await Promise.all([
+      this.get(id),
+      this.prisma.business.findUnique({
+        where: { id: businessId }
+      })
+    ]);
+
+    if (!business) {
+      throw badRequest("BUSINESS_NOT_FOUND", "Client business not found");
+    }
+
+    await this.prisma.$transaction(async (tx) => {
+      await tx.device.update({
+        where: { id: device.id },
+        data: {
+          businessId: business.id,
+          assignmentStatus: AssignmentStatus.ASSIGNED,
+          assignedAt: new Date(),
+          operationalStatus: device.targetUrl ? device.operationalStatus : OperationalStatus.INACTIVE
+        }
+      });
+
+      await this.recordAdminDeviceChange(tx, actorUserId, device.id, "ADMIN_DEVICE_ASSIGN", device, {
+        alias: device.alias,
+        targetUrl: device.targetUrl,
+        productionStatus: device.productionStatus,
+        operationalStatus: device.targetUrl ? device.operationalStatus : OperationalStatus.INACTIVE,
+        businessId: business.id,
+        assignmentStatus: AssignmentStatus.ASSIGNED
+      });
+
+      await tx.deviceEvent.create({
+        data: {
+          deviceId: device.id,
+          eventType: DeviceEventType.CONFIG_UPDATE,
+          source: "SYSTEM",
+          metadata: {
+            actorUserId,
+            businessId: business.id,
+            action: "ADMIN_ASSIGN"
+          }
+        }
+      });
+    });
+
+    return this.get(device.id);
+  }
+
+  async unassignAdminDevice(id: string, actorUserId: string) {
+    const device = await this.get(id);
+
+    await this.prisma.$transaction(async (tx) => {
+      await tx.device.update({
+        where: { id: device.id },
+        data: {
+          alias: null,
+          targetUrl: null,
+          businessId: null,
+          assignmentStatus: AssignmentStatus.UNASSIGNED,
+          operationalStatus: OperationalStatus.INACTIVE,
+          assignedAt: null
+        }
+      });
+
+      await this.recordAdminDeviceChange(tx, actorUserId, device.id, "ADMIN_DEVICE_UNASSIGN", device, {
+        alias: null,
+        targetUrl: null,
+        productionStatus: device.productionStatus,
+        operationalStatus: OperationalStatus.INACTIVE,
+        businessId: null,
+        assignmentStatus: AssignmentStatus.UNASSIGNED
+      });
+
+      await tx.deviceEvent.create({
+        data: {
+          deviceId: device.id,
+          eventType: DeviceEventType.CONFIG_UPDATE,
+          source: "SYSTEM",
+          metadata: {
+            actorUserId,
+            action: "ADMIN_UNASSIGN"
+          }
+        }
+      });
+    });
+
+    return this.get(device.id);
   }
 
   listClientDevices(userId: string) {
@@ -328,5 +492,53 @@ export class DevicesService {
       publicCode,
       ...links
     };
+  }
+
+  private recordAdminDeviceChange(
+    tx: Prisma.TransactionClient,
+    actorUserId: string,
+    deviceId: string,
+    action: string,
+    beforeDevice: {
+      alias: string | null;
+      targetUrl: string | null;
+      productionStatus: string;
+      operationalStatus: string;
+      businessId: string | null;
+      assignmentStatus: string;
+    },
+    afterDevice: {
+      alias: string | null;
+      targetUrl: string | null;
+      productionStatus: string;
+      operationalStatus: string;
+      businessId: string | null;
+      assignmentStatus: string;
+    }
+  ) {
+    return tx.auditLog.create({
+      data: {
+        actorUserId,
+        businessId: typeof afterDevice.businessId === "string" ? afterDevice.businessId : beforeDevice.businessId,
+        deviceId,
+        action,
+        before: {
+          alias: beforeDevice.alias,
+          targetUrl: beforeDevice.targetUrl,
+          productionStatus: beforeDevice.productionStatus,
+          operationalStatus: beforeDevice.operationalStatus,
+          businessId: beforeDevice.businessId,
+          assignmentStatus: beforeDevice.assignmentStatus
+        },
+        after: {
+          alias: afterDevice.alias,
+          targetUrl: afterDevice.targetUrl,
+          productionStatus: afterDevice.productionStatus,
+          operationalStatus: afterDevice.operationalStatus,
+          businessId: afterDevice.businessId,
+          assignmentStatus: afterDevice.assignmentStatus
+        }
+      }
+    });
   }
 }

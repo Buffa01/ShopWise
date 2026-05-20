@@ -61,6 +61,11 @@ export interface Device {
   business?: {
     id: string;
     businessName: string;
+    owner?: {
+      id: string;
+      name: string | null;
+      email: string;
+    };
   } | null;
   batch?: {
     id: string;
@@ -88,8 +93,21 @@ function authHeaders() {
   };
 }
 
-export function listDevices() {
-  return apiRequest<Device[]>("/admin/devices", {
+export function listDevices(query: {
+  q?: string;
+  assignmentStatus?: AssignmentStatus;
+  operationalStatus?: OperationalStatus;
+  productionStatus?: ProductionStatus;
+  deviceTypeId?: string;
+  businessId?: string;
+} = {}) {
+  const params = new URLSearchParams();
+  Object.entries(query).forEach(([key, value]) => {
+    if (value) params.set(key, value);
+  });
+  const suffix = params.toString() ? `?${params.toString()}` : "";
+
+  return apiRequest<Device[]>(`/admin/devices${suffix}`, {
     headers: authHeaders()
   });
 }
@@ -117,6 +135,37 @@ export function createDeviceBatch(input: { deviceTypeId: string; quantity: numbe
     method: "POST",
     headers: authHeaders(),
     body: JSON.stringify(input)
+  });
+}
+
+export function updateAdminDevice(
+  id: string,
+  input: {
+    alias?: string;
+    targetUrl?: string;
+    productionStatus?: ProductionStatus;
+    operationalStatus?: OperationalStatus;
+  }
+) {
+  return apiRequest<Device>(`/admin/devices/${id}`, {
+    method: "PATCH",
+    headers: authHeaders(),
+    body: JSON.stringify(input)
+  });
+}
+
+export function assignAdminDevice(id: string, businessId: string) {
+  return apiRequest<Device>(`/admin/devices/${id}/assign`, {
+    method: "POST",
+    headers: authHeaders(),
+    body: JSON.stringify({ businessId })
+  });
+}
+
+export function unassignAdminDevice(id: string) {
+  return apiRequest<Device>(`/admin/devices/${id}/unassign`, {
+    method: "POST",
+    headers: authHeaders()
   });
 }
 
