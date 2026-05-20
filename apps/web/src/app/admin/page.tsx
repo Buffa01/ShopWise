@@ -21,6 +21,9 @@ export default function AdminPage() {
             <Link className="button-link" href="/admin/clients">
               Clients
             </Link>
+            <Link className="button-link" href="/admin/metrics">
+              Metrics
+            </Link>
           </div>
         </main>
       )}

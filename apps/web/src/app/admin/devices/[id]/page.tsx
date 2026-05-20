@@ -16,6 +16,7 @@ import {
   updateAdminDevice
 } from "../../../../lib/devices";
 import { getAccessToken } from "../../../../lib/auth";
+import { DeviceMetrics, getAdminDeviceMetrics } from "../../../../lib/metrics";
 
 export default function DeviceDetailPage() {
   return (
@@ -37,12 +38,14 @@ function DeviceDetailContent() {
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [metrics, setMetrics] = useState<DeviceMetrics | null>(null);
 
   useEffect(() => {
-    Promise.all([getDevice(params.id), listClients()])
-      .then(([loadedDevice, loadedClients]) => {
+    Promise.all([getDevice(params.id), listClients(), getAdminDeviceMetrics(params.id)])
+      .then(([loadedDevice, loadedClients, loadedMetrics]) => {
         setDevice(loadedDevice);
         setClients(loadedClients);
+        setMetrics(loadedMetrics);
         hydrateForm(loadedDevice);
       })
       .catch((loadError) => {
@@ -130,6 +133,15 @@ function DeviceDetailContent() {
       {error ? <p className="form-error">{error}</p> : null}
       {message ? <p className="form-success">{message}</p> : null}
       {!device && !error ? <p>Loading...</p> : null}
+
+      {metrics ? (
+        <section className="metric-grid">
+          <MetricCard label="Total scans" value={metrics.totalScans} />
+          <MetricCard label="QR scans" value={metrics.qrScans} />
+          <MetricCard label="NFC taps" value={metrics.nfcTaps} />
+          <MetricCard label="Redirects" value={metrics.redirects} />
+        </section>
+      ) : null}
 
       {device ? (
         <section className="detail-grid">
@@ -303,5 +315,14 @@ function DeviceDetailContent() {
         </section>
       ) : null}
     </main>
+  );
+}
+
+function MetricCard({ label, value }: { label: string; value: number }) {
+  return (
+    <div className="metric-card">
+      <span>{label}</span>
+      <strong>{value}</strong>
+    </div>
   );
 }

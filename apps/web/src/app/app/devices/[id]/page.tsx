@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import { FormEvent, useEffect, useState } from "react";
 import { ClientAuthGate } from "../../../../components/client-auth-gate";
 import { Device, getClientDevice, updateClientDevice } from "../../../../lib/devices";
+import { DeviceMetrics, getClientDeviceMetrics } from "../../../../lib/metrics";
 
 type EditableOperationalStatus = "INACTIVE" | "ACTIVE" | "PAUSED";
 
@@ -25,11 +26,13 @@ function ClientDeviceDetailContent() {
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [metrics, setMetrics] = useState<DeviceMetrics | null>(null);
 
   useEffect(() => {
-    getClientDevice(params.id)
-      .then((loadedDevice) => {
+    Promise.all([getClientDevice(params.id), getClientDeviceMetrics(params.id)])
+      .then(([loadedDevice, loadedMetrics]) => {
         setDevice(loadedDevice);
+        setMetrics(loadedMetrics);
         setAlias(loadedDevice.alias ?? "");
         setTargetUrl(loadedDevice.targetUrl ?? "");
         setOperationalStatus(toEditableStatus(loadedDevice.operationalStatus));
@@ -79,6 +82,15 @@ function ClientDeviceDetailContent() {
 
       {device ? (
         <>
+          {metrics ? (
+            <section className="metric-grid">
+              <MetricCard label="Total scans" value={metrics.totalScans} />
+              <MetricCard label="QR scans" value={metrics.qrScans} />
+              <MetricCard label="NFC taps" value={metrics.nfcTaps} />
+              <MetricCard label="Redirects" value={metrics.redirects} />
+            </section>
+          ) : null}
+
           <section className="detail-grid">
             <div>
               <span>Code</span>
@@ -167,6 +179,15 @@ function ClientDeviceDetailContent() {
         </>
       ) : null}
     </main>
+  );
+}
+
+function MetricCard({ label, value }: { label: string; value: number }) {
+  return (
+    <div className="metric-card">
+      <span>{label}</span>
+      <strong>{value}</strong>
+    </div>
   );
 }
 

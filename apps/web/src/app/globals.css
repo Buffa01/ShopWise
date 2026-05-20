@@ -258,6 +258,36 @@ a {
   grid-template-columns: 2fr 1fr 2fr;
 }
 
+.metric-grid {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  margin: 0 0 24px;
+}
+
+.metric-card {
+  background: #ffffff;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  display: grid;
+  gap: 8px;
+  padding: 16px;
+}
+
+.metric-card span {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.metric-card strong {
+  font-size: 28px;
+  line-height: 1;
+}
+
+.metrics-row {
+  grid-template-columns: 2fr repeat(3, 1fr);
+}
+
 .detail-grid strong {
   overflow-wrap: anywhere;
 }

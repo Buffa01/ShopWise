@@ -387,19 +387,46 @@ Behavior:
 
 ### `GET /v1/admin/metrics/overview`
 
-Returns global counters.
+Returns global counters, QR/NFC totals, redirects, scans by day, top devices, and top clients.
 
-### `GET /v1/admin/metrics/devices/top`
+Response shape:
 
-Returns top devices by interactions.
+```json
+{
+  "totalDevices": 100,
+  "activeDevices": 80,
+  "assignedDevices": 75,
+  "unassignedDevices": 25,
+  "totalScans": 1234,
+  "qrScans": 900,
+  "nfcTaps": 334,
+  "redirects": 1200,
+  "scansByDay": [
+    { "date": "2026-05-20", "total": 42, "qr": 30, "nfc": 12 }
+  ],
+  "topDevices": [
+    {
+      "deviceId": "uuid",
+      "publicCode": "A000001",
+      "alias": "Mostrador",
+      "deviceTypeName": "Google Reviews",
+      "businessName": "Cafe Centro",
+      "scans": 100
+    }
+  ],
+  "topClients": [
+    { "businessId": "uuid", "businessName": "Cafe Centro", "scans": 100 }
+  ]
+}
+```
 
-### `GET /v1/admin/metrics/clients/top`
+### `GET /v1/admin/devices/:deviceId/metrics`
 
-Returns top clients by interactions.
+Admin-only. Returns metrics for one device.
 
 ### `GET /v1/metrics/overview`
 
-Returns current client's aggregate metrics.
+Returns current client's aggregate metrics. The response includes only devices owned by the authenticated client's business.
 
 ### `GET /v1/devices/:deviceId/metrics`
 

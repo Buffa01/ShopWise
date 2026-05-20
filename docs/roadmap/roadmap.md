@@ -142,18 +142,18 @@ Acceptance criteria:
 
 Tasks:
 
-- Build admin overview metrics.
-- Build client overview metrics.
-- Build device metrics.
-- Add time bucket queries.
-- Add top devices and top clients.
+- Build admin overview metrics. Done.
+- Build client overview metrics. Done.
+- Build device metrics. Done.
+- Add time bucket queries. Done for daily 30-day scan buckets.
+- Add top devices and top clients. Done.
 
 Acceptance criteria:
 
-- Admin sees global counters.
-- Client sees own counters only.
-- Device detail shows total, QR, NFC, and last scan.
-- Time series supports day/week/month views.
+- Admin sees global counters. Done.
+- Client sees own counters only. Done.
+- Device detail shows total, QR, NFC, and last scan. Done.
+- Time series supports daily views. Done. Week/month views pending.
 
 ## Phase 7: Hardening and Launch
 
