@@ -4,6 +4,7 @@ export type ApiErrorCode =
   | "AUTH_MISSING_TOKEN"
   | "AUTH_INVALID_TOKEN"
   | "AUTH_FORBIDDEN"
+  | "DEVICE_TYPE_SLUG_EXISTS"
   | "VALIDATION_ERROR";
 
 export interface ApiErrorResponse {
@@ -13,4 +14,3 @@ export interface ApiErrorResponse {
     details?: unknown;
   };
 }
-

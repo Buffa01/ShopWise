@@ -1,0 +1,150 @@
+"use client";
+
+import { FormEvent, useMemo, useState } from "react";
+import type { DeviceType, DeviceTypeInput } from "../lib/device-types";
+
+interface DeviceTypeFormProps {
+  initialValue?: DeviceType;
+  submitLabel: string;
+  onSubmit: (input: DeviceTypeInput) => Promise<void>;
+}
+
+export function DeviceTypeForm({ initialValue, submitLabel, onSubmit }: DeviceTypeFormProps) {
+  const [name, setName] = useState(initialValue?.name ?? "");
+  const [slug, setSlug] = useState(initialValue?.slug ?? "");
+  const [description, setDescription] = useState(initialValue?.description ?? "");
+  const [isActive, setIsActive] = useState(initialValue?.isActive ?? true);
+  const [defaultPrefix, setDefaultPrefix] = useState(initialValue?.defaultPrefix ?? "");
+  const [templateKey, setTemplateKey] = useState(initialValue?.templateKey ?? "");
+  const [baseDesignKey, setBaseDesignKey] = useState(initialValue?.baseDesignKey ?? "");
+  const [qrPositionText, setQrPositionText] = useState(
+    initialValue?.qrPosition ? JSON.stringify(initialValue.qrPosition, null, 2) : ""
+  );
+  const [error, setError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const derivedSlug = useMemo(() => slugify(name), [name]);
+
+  function fillSlug() {
+    if (!slug) {
+      setSlug(derivedSlug);
+    }
+  }
+
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setError(null);
+    setIsSubmitting(true);
+
+    try {
+      await onSubmit({
+        name,
+        slug,
+        description: description || undefined,
+        isActive,
+        defaultPrefix: defaultPrefix || undefined,
+        templateKey: templateKey || undefined,
+        baseDesignKey: baseDesignKey || undefined,
+        qrPosition: parseQrPosition(qrPositionText)
+      });
+    } catch (submitError) {
+      setError(submitError instanceof Error ? submitError.message : "Could not save device type");
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+
+  return (
+    <form className="admin-form" onSubmit={handleSubmit}>
+      <label>
+        Name
+        <input
+          onBlur={fillSlug}
+          onChange={(event) => setName(event.target.value)}
+          required
+          value={name}
+        />
+      </label>
+
+      <label>
+        Slug
+        <input
+          onChange={(event) => setSlug(event.target.value)}
+          pattern="^[a-z0-9]+(-[a-z0-9]+)*$"
+          required
+          value={slug}
+        />
+      </label>
+
+      <label>
+        Description
+        <textarea onChange={(event) => setDescription(event.target.value)} rows={3} value={description} />
+      </label>
+
+      <label className="checkbox-row">
+        <input checked={isActive} onChange={(event) => setIsActive(event.target.checked)} type="checkbox" />
+        Active
+      </label>
+
+      <label>
+        Default prefix
+        <input
+          maxLength={12}
+          onChange={(event) => setDefaultPrefix(event.target.value.toUpperCase())}
+          pattern="^[A-Z0-9]*$"
+          value={defaultPrefix}
+        />
+      </label>
+
+      <label>
+        Template key
+        <input onChange={(event) => setTemplateKey(event.target.value)} value={templateKey} />
+      </label>
+
+      <label>
+        Base design key
+        <input onChange={(event) => setBaseDesignKey(event.target.value)} value={baseDesignKey} />
+      </label>
+
+      <label>
+        QR position JSON
+        <textarea
+          onChange={(event) => setQrPositionText(event.target.value)}
+          placeholder='{"unit":"mm","x":0,"y":0,"size":35}'
+          rows={6}
+          value={qrPositionText}
+        />
+      </label>
+
+      {error ? <p className="form-error">{error}</p> : null}
+
+      <button disabled={isSubmitting} type="submit">
+        {isSubmitting ? "Saving..." : submitLabel}
+      </button>
+    </form>
+  );
+}
+
+function slugify(value: string) {
+  return value
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+function parseQrPosition(value: string) {
+  if (!value.trim()) {
+    return undefined;
+  }
+
+  const parsed = JSON.parse(value) as unknown;
+
+  if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+    throw new Error("QR position must be a JSON object");
+  }
+
+  return parsed as Record<string, unknown>;
+}
+
