@@ -35,7 +35,7 @@ Tasks:
 - Add env validation.
 - Implement auth. Done.
 - Implement role guards. Done.
-- Add base layouts for admin/client.
+- Add base layouts for admin/client. In progress.
 
 Acceptance criteria:
 
@@ -49,6 +49,7 @@ Acceptance criteria:
 
 Tasks:
 
+- Implement admin-managed device types. Done.
 - Implement device schema.
 - Implement code generation service.
 - Implement single device creation.

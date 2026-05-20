@@ -34,6 +34,8 @@ Phase 1: Executable foundation.
 - Implemented client registration with business creation.
 - Implemented role guards and admin-only test endpoint.
 - Added minimal login/register/admin/client web routes.
+- Implemented admin device type CRUD API.
+- Implemented admin device type list/create/edit screens.
 
 ## Confirmed Decisions
 
@@ -82,9 +84,9 @@ The file is a design reference only for now. The implementation should later sto
 
 ## Next Recommended Work
 
-1. Implement admin-managed device types.
-2. Implement device creation.
-3. Implement redirect and analytics.
+1. Implement device creation.
+2. Implement redirect and analytics.
+3. Implement QR/sticker asset generation.
 
 ## Local Verification
 
@@ -108,4 +110,5 @@ Result:
 API health: {"status":"ok","service":"shopwise-api"}
 Web: HTTP 200
 Auth: admin login, client registration, /auth/me, and admin 403 checks pass
+Device types: admin list/create/update passes; client access returns 403
 ```

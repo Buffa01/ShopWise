@@ -91,6 +91,46 @@ Response:
 
 ## Admin Devices
 
+## Admin Device Types
+
+### `GET /v1/admin/device-types`
+
+Admin-only. Lists device/product types.
+
+### `POST /v1/admin/device-types`
+
+Admin-only. Creates a device/product type.
+
+Request:
+
+```json
+{
+  "name": "Google Reviews",
+  "slug": "google-review",
+  "description": "Google Reviews QR + NFC sticker",
+  "isActive": true,
+  "defaultPrefix": "A",
+  "templateKey": "sticker/google-review",
+  "baseDesignKey": "designs/google-review-v1.pdf",
+  "qrPosition": {
+    "unit": "mm",
+    "x": 0,
+    "y": 0,
+    "size": 35
+  }
+}
+```
+
+### `GET /v1/admin/device-types/:id`
+
+Admin-only. Returns one device type.
+
+### `PATCH /v1/admin/device-types/:id`
+
+Admin-only. Updates one device type.
+
+Use `isActive = false` to disable a type. Device types are not deleted in v1 because existing devices may depend on them.
+
 ### `POST /v1/admin/devices`
 
 Creates one device.
