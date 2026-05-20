@@ -223,3 +223,16 @@ a {
 .detail-grid strong {
   overflow-wrap: anywhere;
 }
+
+.events-section {
+  margin-top: 32px;
+}
+
+.events-section h2 {
+  font-size: 24px;
+  margin: 0 0 16px;
+}
+
+.events-row {
+  grid-template-columns: 1fr 1fr 2fr;
+}

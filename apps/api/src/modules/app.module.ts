@@ -5,6 +5,7 @@ import { AuthModule } from "./auth/auth.module";
 import { DeviceTypesModule } from "./device-types/device-types.module";
 import { DevicesModule } from "./devices/devices.module";
 import { HealthModule } from "./health/health.module";
+import { RedirectModule } from "./redirect/redirect.module";
 import { PrismaModule } from "../prisma/prisma.module";
 
 @Module({
@@ -18,6 +19,7 @@ import { PrismaModule } from "../prisma/prisma.module";
     AdminModule,
     DeviceTypesModule,
     DevicesModule,
+    RedirectModule,
     HealthModule
   ]
 })

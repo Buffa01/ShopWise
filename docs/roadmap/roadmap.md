@@ -70,12 +70,12 @@ Acceptance criteria:
 
 Tasks:
 
-- Implement `GET /r/:code`.
-- Implement `GET /n/:code`.
-- Record scan/tap events.
-- Anonymize IP metadata.
-- Redirect to target URL.
-- Add fallback page for unconfigured devices.
+- Implement `GET /r/:code`. Done.
+- Implement `GET /n/:code`. Done.
+- Record scan/tap events. Done.
+- Anonymize IP metadata. Done.
+- Redirect to target URL. Done.
+- Add fallback page for unconfigured devices. Done.
 
 Acceptance criteria:
 

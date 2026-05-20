@@ -275,7 +275,9 @@ QR redirect.
 Behavior:
 
 - Records `QR_SCAN`.
+- Updates `lastScanAt`.
 - Redirects if configured and active.
+- Records `REDIRECT` when a redirect happens.
 - Shows fallback if unconfigured.
 - Shows error if invalid, disabled, or archived.
 
@@ -286,6 +288,7 @@ NFC redirect.
 Behavior:
 
 - Records `NFC_TAP`.
+- Updates `lastScanAt`.
 - Same resolution rules as QR.
 
 ## Metrics
