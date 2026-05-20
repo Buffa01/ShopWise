@@ -94,6 +94,12 @@ a {
   margin: 0;
 }
 
+.form-success {
+  color: #166534;
+  font-size: 14px;
+  margin: 0;
+}
+
 .auth-alt {
   color: var(--muted);
   font-size: 14px;
@@ -218,6 +224,16 @@ a {
 .detail-grid span {
   color: var(--muted);
   font-size: 13px;
+}
+
+.asset-actions,
+.config-form,
+.events-section {
+  margin-top: 24px;
+}
+
+.events-row {
+  grid-template-columns: 2fr 1fr 2fr;
 }
 
 .detail-grid strong {

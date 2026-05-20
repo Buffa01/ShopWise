@@ -89,19 +89,19 @@ Acceptance criteria:
 
 Tasks:
 
-- Implement client dashboard.
-- Implement claim endpoint.
-- Implement scanner page.
-- Implement device configuration screen.
-- Validate target URLs.
-- Add pause/activate actions.
+- Implement client dashboard. Done.
+- Implement claim endpoint. Done.
+- Implement scanner/manual claim page. Manual claim done, camera scanner pending.
+- Implement device configuration screen. Done.
+- Validate target URLs. Done.
+- Add pause/activate actions. Done.
 
 Acceptance criteria:
 
-- Client can claim an unassigned device.
-- Client cannot claim assigned/disabled/archived devices.
-- Client can only see own devices.
-- Client can configure alias and target URL.
+- Client can claim an unassigned device. Done.
+- Client cannot claim assigned/disabled/archived devices. Done.
+- Client can only see own devices. Done.
+- Client can configure alias and target URL. Done.
 
 ## Phase 5: Sticker Automation
 

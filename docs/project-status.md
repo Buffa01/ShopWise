@@ -47,6 +47,10 @@ Phase 1: Executable foundation.
 - Implemented QR PNG generation for device `qrUrl`.
 - Implemented initial 10 cm sticker PDF generation.
 - Added latest sticker PDF download from admin device detail.
+- Implemented client device claim endpoint.
+- Implemented client-owned device list/detail endpoints.
+- Implemented client device alias, target URL, and active/paused/inactive configuration.
+- Added client device list, claim, and configuration screens.
 
 ## Confirmed Decisions
 
@@ -90,13 +94,12 @@ The file is a design reference only for now. The implementation should later sto
 
 - Define exact QR placement inside the 10 cm sticker.
 - Define whether the PDF needs bleed/cut marks.
-- Define initial admin-created `DeviceType` fields in the UI.
 - Decide whether analytics raw event retention starts at 12 months.
 
 ## Next Recommended Work
 
-1. Implement client claim and device configuration.
-2. Implement admin support editing for device target/status.
+1. Implement admin support editing for device target/status.
+2. Build first metrics dashboards.
 3. Replace basic sticker template with Figma-based artwork.
 
 ## Local Verification
@@ -125,4 +128,5 @@ Device types: admin list/create/update passes; client access returns 403
 Devices: single creation, batch creation, list, and detail pass
 Redirect: unconfigured fallback, active redirect, QR/NFC events, and lastScanAt pass
 Assets: QR PNG, sticker PDF, PrintAsset record, and authenticated PDF download pass
+Client devices: claim, owned list/detail, alias/target/status configuration pass
 ```
