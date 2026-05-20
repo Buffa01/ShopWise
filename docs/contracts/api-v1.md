@@ -139,10 +139,12 @@ Request:
 
 ```json
 {
-  "deviceTypeSlug": "google-review",
+  "deviceTypeId": "uuid",
   "prefix": "A"
 }
 ```
+
+Response includes generated `publicCode`, `qrUrl`, and `nfcUrl`.
 
 ### `POST /v1/admin/devices/batch`
 
@@ -152,7 +154,7 @@ Request:
 
 ```json
 {
-  "deviceTypeSlug": "google-review",
+  "deviceTypeId": "uuid",
   "quantity": 100,
   "prefix": "A"
 }
@@ -164,7 +166,7 @@ Response:
 {
   "batchId": "uuid",
   "quantity": 100,
-  "status": "GENERATING"
+  "status": "COMPLETED"
 }
 ```
 

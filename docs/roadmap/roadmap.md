@@ -51,11 +51,11 @@ Tasks:
 
 - Implement admin-managed device types. Done.
 - Implement device schema.
-- Implement code generation service.
-- Implement single device creation.
-- Implement batch creation.
-- Generate QR/NFC URLs.
-- Add admin device list and detail.
+- Implement code generation service. Done.
+- Implement single device creation. Done.
+- Implement batch creation. Done.
+- Generate QR/NFC URLs. Done.
+- Add admin device list and detail. Done.
 - Add filters and search.
 
 Acceptance criteria:
