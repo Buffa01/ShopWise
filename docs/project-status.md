@@ -51,6 +51,11 @@ Phase 1: Executable foundation.
 - Implemented client-owned device list/detail endpoints.
 - Implemented client device alias, target URL, and active/paused/inactive configuration.
 - Added client device list, claim, and configuration screens.
+- Implemented admin client list/create/detail endpoints and screens.
+- Implemented admin device support editing for alias, target URL, production status, and operational status.
+- Implemented admin assign/reassign/unassign device workflows.
+- Added audit logs and device events for admin device support actions.
+- Added admin device filters for search, assignment, production, and operational status.
 
 ## Confirmed Decisions
 
@@ -98,8 +103,8 @@ The file is a design reference only for now. The implementation should later sto
 
 ## Next Recommended Work
 
-1. Implement admin support editing for device target/status.
-2. Build first metrics dashboards.
+1. Build first metrics dashboards.
+2. Add admin audit log viewer.
 3. Replace basic sticker template with Figma-based artwork.
 
 ## Local Verification
@@ -129,4 +134,5 @@ Devices: single creation, batch creation, list, and detail pass
 Redirect: unconfigured fallback, active redirect, QR/NFC events, and lastScanAt pass
 Assets: QR PNG, sticker PDF, PrintAsset record, and authenticated PDF download pass
 Client devices: claim, owned list/detail, alias/target/status configuration pass
+Admin support: client list/create/detail, device edit, assign, unassign, audit/event recording pass
 ```

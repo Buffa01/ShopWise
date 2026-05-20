@@ -198,11 +198,17 @@ Allowed fields:
 {
   "alias": "Mostrador Frente",
   "targetUrl": "https://g.page/r/...",
-  "businessId": "uuid",
   "productionStatus": "PRINTED",
   "operationalStatus": "ACTIVE"
 }
 ```
+
+Rules:
+
+- Immutable fields cannot be changed: `id`, `publicCode`, `qrUrl`, `nfcUrl`, paths.
+- `ACTIVE` requires a configured `targetUrl`.
+- Clearing `targetUrl` moves an active device back to `INACTIVE`.
+- Records `AuditLog` and `DeviceEvent`.
 
 ### `POST /v1/admin/devices/:deviceId/assign`
 
@@ -214,9 +220,11 @@ Request:
 }
 ```
 
+Assigns or reassigns the device to a client business. Records `AuditLog` and `DeviceEvent`.
+
 ### `POST /v1/admin/devices/:deviceId/unassign`
 
-Unassigns a device when business rules allow it.
+Unassigns a device and clears business-specific configuration (`alias`, `targetUrl`, owner, assigned timestamp). The device returns to `UNASSIGNED` and `INACTIVE`. Records `AuditLog` and `DeviceEvent`.
 
 ### `GET /v1/admin/devices/:deviceId/assets/latest/download`
 
@@ -229,6 +237,34 @@ GET /v1/admin/devices/:deviceId/assets/latest
 ```
 
 Returns the latest sticker PDF as `application/pdf`.
+
+## Admin Clients
+
+### `GET /v1/admin/clients`
+
+Admin-only. Lists client business profiles with owner email/name and device count.
+
+### `POST /v1/admin/clients`
+
+Admin-only. Creates a client user and business profile.
+
+Request:
+
+```json
+{
+  "name": "Ana",
+  "email": "ana@example.com",
+  "password": "temporary123",
+  "businessName": "Cafe Centro",
+  "phone": "+598...",
+  "address": "Montevideo",
+  "googleReviewUrl": "https://g.page/r/..."
+}
+```
+
+### `GET /v1/admin/clients/:businessId`
+
+Admin-only. Returns one client business, owner data, and assigned devices.
 
 ## Client Devices
 

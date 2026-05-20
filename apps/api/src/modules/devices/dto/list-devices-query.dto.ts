@@ -11,6 +11,10 @@ export class ListDevicesQueryDto {
   deviceTypeId?: string;
 
   @IsOptional()
+  @IsString()
+  businessId?: string;
+
+  @IsOptional()
   @IsEnum(ProductionStatus)
   productionStatus?: ProductionStatus;
 
@@ -22,4 +26,3 @@ export class ListDevicesQueryDto {
   @IsEnum(OperationalStatus)
   operationalStatus?: OperationalStatus;
 }
-

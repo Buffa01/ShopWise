@@ -3,6 +3,7 @@ import { ConfigModule } from "@nestjs/config";
 import { AdminModule } from "./admin/admin.module";
 import { AssetsModule } from "./assets/assets.module";
 import { AuthModule } from "./auth/auth.module";
+import { BusinessesModule } from "./businesses/businesses.module";
 import { DeviceTypesModule } from "./device-types/device-types.module";
 import { DevicesModule } from "./devices/devices.module";
 import { HealthModule } from "./health/health.module";
@@ -19,6 +20,7 @@ import { PrismaModule } from "../prisma/prisma.module";
     AssetsModule,
     AuthModule,
     AdminModule,
+    BusinessesModule,
     DeviceTypesModule,
     DevicesModule,
     RedirectModule,
