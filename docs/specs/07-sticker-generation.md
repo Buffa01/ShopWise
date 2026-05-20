@@ -16,8 +16,8 @@ Automatically generate print-ready sticker/sign assets by reusing the existing b
 ## Outputs
 
 - QR image asset.
-- Print-ready PNG.
 - Print-ready PDF.
+- Print-ready PNG later if needed.
 - Optional SVG later if the design pipeline supports it safely.
 
 ## Recommended Architecture
@@ -53,6 +53,15 @@ The initial Google Reviews sticker is circular:
 Diameter: 10 cm
 Output: PDF initially
 ```
+
+Initial implementation:
+
+```text
+QR PNG: storage/devices/{publicCode}/qr.png
+PDF:    storage/devices/{publicCode}/sticker.pdf
+```
+
+The first generated PDF is a basic 10 cm circular template with the QR inserted. The final Figma-based artwork can replace the template in a later iteration without changing the device or asset model.
 
 Reference file:
 

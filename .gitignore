@@ -17,6 +17,7 @@ coverage/
 
 # prisma/local data
 dev.db
+storage/
 
 # logs
 *.log

@@ -43,6 +43,10 @@ Phase 1: Executable foundation.
 - Implemented public QR/NFC redirect endpoints.
 - Implemented scan/tap/redirect event tracking.
 - Added latest events and `lastScanAt` to admin device detail.
+- Implemented local storage service for generated assets.
+- Implemented QR PNG generation for device `qrUrl`.
+- Implemented initial 10 cm sticker PDF generation.
+- Added latest sticker PDF download from admin device detail.
 
 ## Confirmed Decisions
 
@@ -91,9 +95,9 @@ The file is a design reference only for now. The implementation should later sto
 
 ## Next Recommended Work
 
-1. Implement QR/sticker asset generation.
-2. Implement client claim and device configuration.
-3. Implement admin support editing for device target/status.
+1. Implement client claim and device configuration.
+2. Implement admin support editing for device target/status.
+3. Replace basic sticker template with Figma-based artwork.
 
 ## Local Verification
 
@@ -120,4 +124,5 @@ Auth: admin login, client registration, /auth/me, and admin 403 checks pass
 Device types: admin list/create/update passes; client access returns 403
 Devices: single creation, batch creation, list, and detail pass
 Redirect: unconfigured fallback, active redirect, QR/NFC events, and lastScanAt pass
+Assets: QR PNG, sticker PDF, PrintAsset record, and authenticated PDF download pass
 ```
