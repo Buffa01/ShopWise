@@ -27,11 +27,11 @@ Acceptance criteria:
 
 Tasks:
 
-- Initialize monorepo with Turborepo.
-- Create `apps/web` Next.js app.
-- Create `apps/api` NestJS app.
-- Add shared `packages/contracts`.
-- Add PostgreSQL and Prisma.
+- Initialize monorepo with Turborepo. Done.
+- Create `apps/web` Next.js app. Done.
+- Create `apps/api` NestJS app. Done.
+- Add shared `packages/contracts`. Done.
+- Add PostgreSQL and Prisma. Done.
 - Add env validation.
 - Implement auth.
 - Implement role guards.
@@ -168,4 +168,3 @@ Acceptance criteria:
 8. Implement device code generation unit tests.
 9. Implement admin single-device creation.
 10. Implement public redirect skeleton.
-

@@ -1,0 +1,13 @@
+{
+  "name": "@shopwise/templates",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "echo \"Templates package has no build step\"",
+    "lint": "echo \"Templates package has no lint step\"",
+    "test": "echo \"Templates package has no tests yet\"",
+    "typecheck": "echo \"Templates package has no typecheck step\""
+  }
+}
+

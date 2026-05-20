@@ -2,7 +2,7 @@
 
 ## Current Phase
 
-Phase 0: Specs and technical definition.
+Phase 1: Executable foundation.
 
 ## Completed
 
@@ -22,6 +22,14 @@ Phase 0: Specs and technical definition.
 - Added device types as admin-managed records.
 - Documented initial deploy and cost estimate.
 - Documented analytics retention strategy.
+- Initialized pnpm/Turborepo monorepo.
+- Added `apps/web` Next.js app.
+- Added `apps/api` NestJS app.
+- Added shared packages for contracts, config, utils, and templates.
+- Added local PostgreSQL via Docker Compose on port `5433`.
+- Added Prisma schema and initial migration.
+- Added admin seed and Google Reviews device type seed.
+- Verified local web/API startup.
 
 ## Confirmed Decisions
 
@@ -61,9 +69,8 @@ Size: ~190 KB
 
 The file is a design reference only for now. The implementation should later store production templates inside the repo or object storage instead of depending on the Downloads path.
 
-## Pending Before Coding
+## Pending Product Decisions
 
-- Confirm whether to copy the sticker PDF into the repository as a design reference.
 - Define exact QR placement inside the 10 cm sticker.
 - Define whether the PDF needs bleed/cut marks.
 - Define initial admin-created `DeviceType` fields in the UI.
@@ -71,12 +78,30 @@ The file is a design reference only for now. The implementation should later sto
 
 ## Next Recommended Work
 
-1. Finalize docs review.
-2. Initialize monorepo.
-3. Add Next.js app.
-4. Add NestJS app.
-5. Add PostgreSQL and Prisma.
-6. Implement auth.
-7. Implement admin-managed device types.
-8. Implement device creation.
+1. Implement auth and roles.
+2. Add login/register screens.
+3. Add `GET /v1/auth/me`.
+4. Implement admin-managed device types.
+5. Implement device creation.
 
+## Local Verification
+
+Last verified:
+
+```text
+pnpm db:migrate
+pnpm db:seed
+pnpm typecheck
+pnpm build
+pnpm lint
+pnpm dev
+curl http://localhost:3001/v1/health
+curl -I http://localhost:3000
+```
+
+Result:
+
+```text
+API health: {"status":"ok","service":"shopwise-api"}
+Web: HTTP 200
+```

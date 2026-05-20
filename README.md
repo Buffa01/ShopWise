@@ -37,3 +37,38 @@ Use a monorepo with:
 - `packages/*`: shared contracts, config, UI, templates, and utilities.
 
 See [ADR-0001](docs/adr/0001-monorepo-nextjs-nestjs.md).
+
+## Local Development
+
+Requirements:
+
+- Node.js 22+
+- Docker
+- pnpm 9+
+
+If pnpm is not installed globally, commands can be run with:
+
+```bash
+npx pnpm@9.15.4 <command>
+```
+
+Setup:
+
+```bash
+cp .env.example .env
+pnpm install
+docker compose up -d postgres
+pnpm db:migrate
+pnpm db:seed
+pnpm dev
+```
+
+Local URLs:
+
+```text
+Web:      http://localhost:3000
+API:      http://localhost:3001/v1/health
+Postgres: localhost:5433
+```
+
+ShopWise uses `5433` locally to avoid conflicts with other local Postgres containers.
