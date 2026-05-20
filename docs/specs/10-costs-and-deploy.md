@@ -1,0 +1,93 @@
+# Costs and Deploy
+
+## Initial Deploy Decision
+
+Recommended initial setup:
+
+```text
+Web:      Vercel
+API:      Fly.io
+Database: Supabase Postgres
+Storage:  Cloudflare R2
+```
+
+## Domains
+
+Buy when ready:
+
+```text
+shopwise.uy
+sw.uy
+```
+
+Recommended usage:
+
+```text
+shopwise.uy -> public site, login, admin, client app
+sw.uy       -> short QR/NFC redirect domain only
+```
+
+Examples:
+
+```text
+https://shopwise.uy/login
+https://shopwise.uy/admin/devices
+https://sw.uy/r/A000001
+https://sw.uy/n/A000001
+```
+
+Future Argentina expansion does not require an architecture change. The same backend can support Argentina. If the business expands there, buy `shopwise.com.ar` or add regional marketing domains later.
+
+## Monthly Cost Estimate
+
+Approximate initial monthly cost:
+
+```text
+Vercel Pro:        ~20 USD/month
+Supabase Pro:      ~25 USD/month
+Fly.io API:        ~6-12 USD/month initially
+Cloudflare R2:     ~0-2 USD/month initially
+Total:             ~50-60 USD/month initially
+```
+
+This assumes low/medium MVP traffic, one production database, one small API instance, and small asset storage.
+
+## Why This Is Cost-Efficient
+
+- Redirect requests are cheap.
+- QR/NFC URLs are short and handled by one API endpoint family.
+- Sticker PDFs are generated during device creation, not on every scan.
+- R2 has low storage cost and no egress fees.
+- Analytics counters are cheap if aggregated correctly.
+
+## What Makes Cost Increase
+
+Costs will increase mainly through:
+
+- More database compute.
+- Very high analytics event write volume.
+- Heavy PDF generation batches.
+- Large asset storage.
+- Expensive observability/log retention.
+- More API instances for high availability.
+- More team seats in managed platforms.
+
+## Storage Decision
+
+Use Cloudflare R2 for production assets:
+
+- QR images.
+- Sticker PDFs.
+- Future template assets.
+
+Use local filesystem storage in development behind the same storage interface.
+
+## Cost Control Rules
+
+- Generate PDFs once and store them.
+- Do not regenerate stickers on every download.
+- Keep raw event retention finite.
+- Store aggregated analytics for long-term reporting.
+- Avoid logging full request bodies or sensitive metadata.
+- Add caching for public static assets.
+
