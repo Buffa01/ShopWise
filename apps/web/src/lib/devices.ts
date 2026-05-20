@@ -119,3 +119,38 @@ export function createDeviceBatch(input: { deviceTypeId: string; quantity: numbe
     body: JSON.stringify(input)
   });
 }
+
+export function listClientDevices() {
+  return apiRequest<Device[]>("/devices", {
+    headers: authHeaders()
+  });
+}
+
+export function getClientDevice(id: string) {
+  return apiRequest<Device>(`/devices/${id}`, {
+    headers: authHeaders()
+  });
+}
+
+export function claimClientDevice(code: string) {
+  return apiRequest<Device>("/devices/claim", {
+    method: "POST",
+    headers: authHeaders(),
+    body: JSON.stringify({ code })
+  });
+}
+
+export function updateClientDevice(
+  id: string,
+  input: {
+    alias?: string;
+    targetUrl?: string;
+    operationalStatus?: "INACTIVE" | "ACTIVE" | "PAUSED";
+  }
+) {
+  return apiRequest<Device>(`/devices/${id}`, {
+    method: "PATCH",
+    headers: authHeaders(),
+    body: JSON.stringify(input)
+  });
+}

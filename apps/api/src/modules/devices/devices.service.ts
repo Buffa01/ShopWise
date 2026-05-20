@@ -1,12 +1,14 @@
 import { Inject, Injectable, NotFoundException } from "@nestjs/common";
-import { BatchStatus, Prisma } from "@prisma/client";
+import { AssignmentStatus, BatchStatus, DeviceEventType, OperationalStatus, Prisma } from "@prisma/client";
 import { AssetsService } from "../assets/assets.service";
-import { badRequest } from "../../common/errors/http-errors";
+import { badRequest, forbidden } from "../../common/errors/http-errors";
 import { PrismaService } from "../../prisma/prisma.service";
 import { CodeGeneratorService } from "./code/code-generator.service";
 import type { CreateDeviceBatchDto } from "./dto/create-device-batch.dto";
 import type { CreateDeviceDto } from "./dto/create-device.dto";
+import type { ClaimDeviceDto } from "./dto/claim-device.dto";
 import type { ListDevicesQueryDto } from "./dto/list-devices-query.dto";
+import type { UpdateClientDeviceDto } from "./dto/update-client-device.dto";
 
 const DEVICE_INCLUDE = {
   deviceType: true,
@@ -149,6 +151,151 @@ export class DevicesService {
 
   getLatestPrintAssetFile(deviceId: string) {
     return this.assets.getLatestPrintAssetFile(deviceId);
+  }
+
+  listClientDevices(userId: string) {
+    return this.prisma.device.findMany({
+      where: {
+        business: {
+          ownerUserId: userId
+        }
+      },
+      include: DEVICE_INCLUDE,
+      orderBy: {
+        createdAt: "desc"
+      }
+    });
+  }
+
+  async getClientDevice(id: string, userId: string) {
+    const device = await this.prisma.device.findFirst({
+      where: {
+        id,
+        business: {
+          ownerUserId: userId
+        }
+      },
+      include: {
+        ...DEVICE_INCLUDE,
+        events: {
+          orderBy: { createdAt: "desc" },
+          take: 10
+        }
+      }
+    });
+
+    if (!device) {
+      throw forbidden("DEVICE_FORBIDDEN", "Device not found or not owned by this client");
+    }
+
+    return device;
+  }
+
+  async claim(dto: ClaimDeviceDto, userId: string) {
+    const code = dto.code.trim().toUpperCase();
+    const business = await this.prisma.business.findUnique({
+      where: { ownerUserId: userId }
+    });
+
+    if (!business) {
+      throw badRequest("VALIDATION_ERROR", "Client business profile not found");
+    }
+
+    const device = await this.prisma.device.findUnique({
+      where: { publicCode: code }
+    });
+
+    if (!device) {
+      throw badRequest("DEVICE_NOT_FOUND", "Device not found");
+    }
+
+    if (device.assignmentStatus === AssignmentStatus.ASSIGNED || device.businessId) {
+      throw badRequest("DEVICE_ALREADY_ASSIGNED", "Device already has an owner");
+    }
+
+    if (device.operationalStatus === OperationalStatus.DISABLED || device.operationalStatus === OperationalStatus.ARCHIVED) {
+      throw badRequest("DEVICE_NOT_CLAIMABLE", "Device cannot be claimed");
+    }
+
+    const claimed = await this.prisma.device.updateMany({
+      where: {
+        id: device.id,
+        businessId: null,
+        assignmentStatus: AssignmentStatus.UNASSIGNED
+      },
+      data: {
+        businessId: business.id,
+        assignmentStatus: AssignmentStatus.ASSIGNED,
+        operationalStatus: device.targetUrl ? OperationalStatus.ACTIVE : OperationalStatus.INACTIVE,
+        assignedAt: new Date()
+      }
+    });
+
+    if (claimed.count !== 1) {
+      throw badRequest("DEVICE_ALREADY_ASSIGNED", "Device already has an owner");
+    }
+
+    await this.prisma.deviceEvent.create({
+      data: {
+        deviceId: device.id,
+        eventType: DeviceEventType.CLAIM,
+        source: "SYSTEM",
+        metadata: {
+          businessId: business.id,
+          userId
+        }
+      }
+    });
+
+    return this.getClientDevice(device.id, userId);
+  }
+
+  async updateClientDevice(id: string, userId: string, dto: UpdateClientDeviceDto) {
+    const device = await this.getClientDevice(id, userId);
+    const data: Prisma.DeviceUpdateInput = {};
+    const nextTargetUrl = dto.targetUrl !== undefined ? dto.targetUrl.trim() || null : device.targetUrl;
+
+    if (dto.alias !== undefined) {
+      data.alias = dto.alias.trim() || null;
+    }
+
+    if (dto.targetUrl !== undefined) {
+      data.targetUrl = nextTargetUrl;
+    }
+
+    if (dto.operationalStatus !== undefined) {
+      if (![OperationalStatus.ACTIVE, OperationalStatus.PAUSED, OperationalStatus.INACTIVE].includes(dto.operationalStatus)) {
+        throw badRequest("VALIDATION_ERROR", "Clients can only set active, paused, or inactive status");
+      }
+
+      if (dto.operationalStatus === OperationalStatus.ACTIVE && !nextTargetUrl) {
+        throw badRequest("VALIDATION_ERROR", "Active devices require a target URL");
+      }
+
+      data.operationalStatus = dto.operationalStatus;
+    } else if (nextTargetUrl && device.operationalStatus === OperationalStatus.INACTIVE) {
+      data.operationalStatus = OperationalStatus.ACTIVE;
+    } else if (dto.targetUrl !== undefined && !nextTargetUrl && device.operationalStatus === OperationalStatus.ACTIVE) {
+      data.operationalStatus = OperationalStatus.INACTIVE;
+    }
+
+    await this.prisma.device.update({
+      where: { id: device.id },
+      data
+    });
+
+    await this.prisma.deviceEvent.create({
+      data: {
+        deviceId: device.id,
+        eventType: DeviceEventType.CONFIG_UPDATE,
+        source: "SYSTEM",
+        metadata: {
+          fields: Object.keys(dto)
+        }
+      }
+    });
+
+    return this.getClientDevice(device.id, userId);
   }
 
   private async getActiveDeviceType(id: string, tx: Prisma.TransactionClient) {

@@ -238,12 +238,13 @@ Returns devices owned by current client.
 
 ### `POST /v1/devices/claim`
 
+Client-only. Claims an unassigned device by public code. The API accepts the normalized short code only; the web UI may extract it from a pasted ShopWise QR/NFC URL before calling this endpoint.
+
 Request:
 
 ```json
 {
-  "code": "A000001",
-  "source": "QR"
+  "code": "A000001"
 }
 ```
 
@@ -251,12 +252,59 @@ Response:
 
 ```json
 {
-  "deviceId": "uuid",
+  "id": "uuid",
   "publicCode": "A000001",
   "assignmentStatus": "ASSIGNED",
   "operationalStatus": "INACTIVE"
 }
 ```
+
+Rules:
+
+- `DEVICE_NOT_FOUND` when the public code does not exist.
+- `DEVICE_ALREADY_ASSIGNED` when the device already belongs to a business.
+- `DEVICE_NOT_CLAIMABLE` when the device is disabled or archived.
+- Claim is atomic to avoid double assignment.
+- A `CLAIM` device event is recorded.
+
+### `GET /v1/devices/:deviceId`
+
+Client-only. Returns one owned device with latest events.
+
+Rules:
+
+- Clients can only fetch devices owned by their business.
+- Non-owned devices return `DEVICE_FORBIDDEN`.
+
+### `PATCH /v1/devices/:deviceId`
+
+Client-only. Updates client-editable device configuration.
+
+Request:
+
+```json
+{
+  "alias": "Mostrador Frente",
+  "targetUrl": "https://g.page/r/...",
+  "operationalStatus": "ACTIVE"
+}
+```
+
+Allowed `operationalStatus` values for clients:
+
+```text
+ACTIVE
+PAUSED
+INACTIVE
+```
+
+Rules:
+
+- Clients cannot set `DISABLED` or `ARCHIVED`.
+- `ACTIVE` requires a configured `targetUrl`.
+- Empty `targetUrl` clears the destination and moves an active device back to `INACTIVE`.
+- If an inactive device receives a valid `targetUrl` without an explicit status, it becomes `ACTIVE`.
+- A `CONFIG_UPDATE` device event is recorded.
 
 ### `GET /v1/devices/:deviceId`
 
