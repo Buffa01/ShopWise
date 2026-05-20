@@ -56,6 +56,10 @@ Phase 1: Executable foundation.
 - Implemented admin assign/reassign/unassign device workflows.
 - Added audit logs and device events for admin device support actions.
 - Added admin device filters for search, assignment, production, and operational status.
+- Implemented admin metrics overview endpoint and dashboard.
+- Implemented client metrics overview endpoint and dashboard.
+- Implemented admin/client per-device metrics endpoints and summary cards.
+- Added 30-day daily scan buckets, QR/NFC split, redirects, top devices, and top clients.
 
 ## Confirmed Decisions
 
@@ -103,8 +107,8 @@ The file is a design reference only for now. The implementation should later sto
 
 ## Next Recommended Work
 
-1. Build first metrics dashboards.
-2. Add admin audit log viewer.
+1. Add admin audit log viewer.
+2. Add rate limiting and structured logging.
 3. Replace basic sticker template with Figma-based artwork.
 
 ## Local Verification
@@ -135,4 +139,5 @@ Redirect: unconfigured fallback, active redirect, QR/NFC events, and lastScanAt 
 Assets: QR PNG, sticker PDF, PrintAsset record, and authenticated PDF download pass
 Client devices: claim, owned list/detail, alias/target/status configuration pass
 Admin support: client list/create/detail, device edit, assign, unassign, audit/event recording pass
+Metrics: admin overview, client overview, per-device metrics, QR/NFC split, top devices, top clients pass
 ```

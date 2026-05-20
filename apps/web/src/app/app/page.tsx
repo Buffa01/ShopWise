@@ -18,6 +18,9 @@ export default function ClientAppPage() {
             <Link className="button-link" href="/app/devices/add">
               Add device
             </Link>
+            <Link className="button-link" href="/app/metrics">
+              Metrics
+            </Link>
           </div>
         </main>
       )}

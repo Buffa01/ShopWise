@@ -7,6 +7,7 @@ import { BusinessesModule } from "./businesses/businesses.module";
 import { DeviceTypesModule } from "./device-types/device-types.module";
 import { DevicesModule } from "./devices/devices.module";
 import { HealthModule } from "./health/health.module";
+import { MetricsModule } from "./metrics/metrics.module";
 import { RedirectModule } from "./redirect/redirect.module";
 import { PrismaModule } from "../prisma/prisma.module";
 
@@ -23,6 +24,7 @@ import { PrismaModule } from "../prisma/prisma.module";
     BusinessesModule,
     DeviceTypesModule,
     DevicesModule,
+    MetricsModule,
     RedirectModule,
     HealthModule
   ]
