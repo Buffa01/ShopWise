@@ -1,5 +1,6 @@
 import { Inject, Injectable, NotFoundException } from "@nestjs/common";
 import { BatchStatus, Prisma } from "@prisma/client";
+import { AssetsService } from "../assets/assets.service";
 import { badRequest } from "../../common/errors/http-errors";
 import { PrismaService } from "../../prisma/prisma.service";
 import { CodeGeneratorService } from "./code/code-generator.service";
@@ -17,7 +18,8 @@ const DEVICE_INCLUDE = {
 export class DevicesService {
   constructor(
     @Inject(PrismaService) private readonly prisma: PrismaService,
-    @Inject(CodeGeneratorService) private readonly codeGenerator: CodeGeneratorService
+    @Inject(CodeGeneratorService) private readonly codeGenerator: CodeGeneratorService,
+    @Inject(AssetsService) private readonly assets: AssetsService
   ) {}
 
   list(query: ListDevicesQueryDto) {
@@ -76,8 +78,8 @@ export class DevicesService {
     return device;
   }
 
-  createOne(dto: CreateDeviceDto) {
-    return this.prisma.$transaction(async (tx) => {
+  async createOne(dto: CreateDeviceDto) {
+    const device = await this.prisma.$transaction(async (tx) => {
       const deviceType = await this.getActiveDeviceType(dto.deviceTypeId, tx);
       const prefix = this.resolvePrefix(dto.prefix, deviceType.defaultPrefix);
       const [publicCode] = await this.codeGenerator.allocateCodes(prefix, 1, tx);
@@ -87,10 +89,13 @@ export class DevicesService {
         include: DEVICE_INCLUDE
       });
     });
+
+    await this.assets.generateDeviceAssets(device.id);
+    return this.get(device.id);
   }
 
-  createBatch(dto: CreateDeviceBatchDto, createdById: string) {
-    return this.prisma.$transaction(async (tx) => {
+  async createBatch(dto: CreateDeviceBatchDto, createdById: string) {
+    const batch = await this.prisma.$transaction(async (tx) => {
       const deviceType = await this.getActiveDeviceType(dto.deviceTypeId, tx);
       const prefix = this.resolvePrefix(dto.prefix, deviceType.defaultPrefix);
       const publicCodes = await this.codeGenerator.allocateCodes(prefix, dto.quantity, tx);
@@ -126,6 +131,24 @@ export class DevicesService {
         }
       });
     });
+
+    for (const device of batch.devices) {
+      await this.assets.generateDeviceAssets(device.id);
+    }
+
+    return this.prisma.deviceBatch.findUniqueOrThrow({
+      where: { id: batch.id },
+      include: {
+        devices: {
+          orderBy: { publicCode: "asc" },
+          include: DEVICE_INCLUDE
+        }
+      }
+    });
+  }
+
+  getLatestPrintAssetFile(deviceId: string) {
+    return this.assets.getLatestPrintAssetFile(deviceId);
   }
 
   private async getActiveDeviceType(id: string, tx: Prisma.TransactionClient) {
@@ -160,4 +183,3 @@ export class DevicesService {
     };
   }
 }
-

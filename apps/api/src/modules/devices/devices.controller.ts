@@ -1,5 +1,6 @@
-import { Body, Controller, Get, Inject, Param, Post, Query, UseGuards } from "@nestjs/common";
+import { Body, Controller, Get, Inject, NotFoundException, Param, Post, Query, Res, UseGuards } from "@nestjs/common";
 import { UserRole } from "@prisma/client";
+import type { Response } from "express";
 import { CurrentUserDecorator } from "../../common/decorators/current-user.decorator";
 import { Roles } from "../../common/decorators/roles.decorator";
 import { JwtAuthGuard } from "../../common/guards/jwt-auth.guard";
@@ -26,6 +27,24 @@ export class DevicesController {
     return this.devicesService.get(id);
   }
 
+  @Get(":id/assets/latest")
+  async downloadLatestAsset(@Param("id") id: string, @Res() response: Response) {
+    const result = await this.devicesService.getLatestPrintAssetFile(id);
+
+    if (!result) {
+      throw new NotFoundException({
+        error: {
+          code: "PRINT_ASSET_NOT_FOUND",
+          message: "Print asset not found"
+        }
+      });
+    }
+
+    response.setHeader("Content-Type", "application/pdf");
+    response.setHeader("Content-Disposition", `attachment; filename=\"${result.publicCode}-sticker.pdf\"`);
+    return response.send(result.file);
+  }
+
   @Post()
   createOne(@Body() dto: CreateDeviceDto) {
     return this.devicesService.createOne(dto);
@@ -36,4 +55,3 @@ export class DevicesController {
     return this.devicesService.createBatch(dto, currentUser.id);
   }
 }
-

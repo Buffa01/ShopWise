@@ -108,10 +108,10 @@ Acceptance criteria:
 Tasks:
 
 - Add sticker template package.
-- Generate QR image assets.
-- Render sticker PNG/PDF.
-- Upload assets to storage.
-- Add admin download action.
+- Generate QR image assets. Done.
+- Render sticker PNG/PDF. PDF done, PNG pending if needed.
+- Upload assets to storage. Local storage done, R2 pending for production.
+- Add admin download action. Done.
 - Track asset download event.
 
 Acceptance criteria:

@@ -4,7 +4,8 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { AdminAuthGate } from "../../../../components/admin-auth-gate";
-import { Device, getDevice } from "../../../../lib/devices";
+import { Device, getDevice, getLatestPrintAssetUrl } from "../../../../lib/devices";
+import { getAccessToken } from "../../../../lib/auth";
 
 export default function DeviceDetailPage() {
   return (
@@ -78,7 +79,42 @@ function DeviceDetailContent() {
             <span>Last scan</span>
             <strong>{device.lastScanAt ? new Date(device.lastScanAt).toLocaleString() : "No scans yet"}</strong>
           </div>
+          <div>
+            <span>QR image</span>
+            <strong>{device.qrImageKey ?? "Not generated"}</strong>
+          </div>
+          <div>
+            <span>Print asset</span>
+            <strong>{device.printAssets?.[0]?.pdfKey ?? "Not generated"}</strong>
+          </div>
         </section>
+      ) : null}
+
+      {device?.latestPrintAssetId ? (
+        <div className="asset-actions">
+          <button
+            className="button-link"
+            onClick={() => {
+              const token = getAccessToken();
+              if (!token) return;
+              void fetch(getLatestPrintAssetUrl(device.id), {
+                headers: { Authorization: `Bearer ${token}` }
+              })
+                .then((response) => response.blob())
+                .then((blob) => {
+                  const url = window.URL.createObjectURL(blob);
+                  const link = document.createElement("a");
+                  link.href = url;
+                  link.download = `${device.publicCode}-sticker.pdf`;
+                  link.click();
+                  window.URL.revokeObjectURL(url);
+                });
+            }}
+            type="button"
+          >
+            Download sticker PDF
+          </button>
+        </div>
       ) : null}
 
       {device ? (

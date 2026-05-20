@@ -1,6 +1,7 @@
 import { Module } from "@nestjs/common";
 import { ConfigModule } from "@nestjs/config";
 import { AdminModule } from "./admin/admin.module";
+import { AssetsModule } from "./assets/assets.module";
 import { AuthModule } from "./auth/auth.module";
 import { DeviceTypesModule } from "./device-types/device-types.module";
 import { DevicesModule } from "./devices/devices.module";
@@ -15,6 +16,7 @@ import { PrismaModule } from "../prisma/prisma.module";
       envFilePath: ["../../.env", ".env"]
     }),
     PrismaModule,
+    AssetsModule,
     AuthModule,
     AdminModule,
     DeviceTypesModule,

@@ -222,6 +222,14 @@ Unassigns a device when business rules allow it.
 
 Downloads or returns signed URL for latest print asset.
 
+Current implementation:
+
+```text
+GET /v1/admin/devices/:deviceId/assets/latest
+```
+
+Returns the latest sticker PDF as `application/pdf`.
+
 ## Client Devices
 
 ### `GET /v1/devices`
