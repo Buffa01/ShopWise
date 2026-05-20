@@ -111,6 +111,14 @@ model DeviceType {
   devices Device[]
 }
 
+model CodeSequence {
+  id        String   @id @default(uuid())
+  prefix    String   @unique
+  nextValue BigInt   @default(1)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
 model Device {
   id                 String             @id @default(uuid())
   deviceTypeId       String
@@ -218,3 +226,4 @@ model AuditLog {
 - `PrintAsset` is separate to support future regenerated versions.
 - `DeviceEvent.deviceId` is nullable so invalid-code attempts can be logged without a matching device.
 - `DeviceType` is database-managed, not a hardcoded enum, so admins can create future product types and attach a base design/template before creating devices.
+- `CodeSequence` allocates short public codes transactionally per prefix.

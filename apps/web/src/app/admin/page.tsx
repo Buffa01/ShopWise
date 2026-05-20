@@ -15,6 +15,9 @@ export default function AdminPage() {
             <Link className="button-link" href="/admin/device-types">
               Device types
             </Link>
+            <Link className="button-link" href="/admin/devices">
+              Devices
+            </Link>
           </div>
         </main>
       )}

@@ -36,6 +36,10 @@ Phase 1: Executable foundation.
 - Added minimal login/register/admin/client web routes.
 - Implemented admin device type CRUD API.
 - Implemented admin device type list/create/edit screens.
+- Implemented admin device creation API.
+- Implemented batch device creation API.
+- Implemented base36 public code allocation with `CodeSequence`.
+- Implemented admin device list/detail/create/batch screens.
 
 ## Confirmed Decisions
 
@@ -84,9 +88,9 @@ The file is a design reference only for now. The implementation should later sto
 
 ## Next Recommended Work
 
-1. Implement device creation.
-2. Implement redirect and analytics.
-3. Implement QR/sticker asset generation.
+1. Implement redirect and analytics.
+2. Implement QR/sticker asset generation.
+3. Implement client claim and device configuration.
 
 ## Local Verification
 
@@ -111,4 +115,5 @@ API health: {"status":"ok","service":"shopwise-api"}
 Web: HTTP 200
 Auth: admin login, client registration, /auth/me, and admin 403 checks pass
 Device types: admin list/create/update passes; client access returns 403
+Devices: single creation, batch creation, list, and detail pass
 ```

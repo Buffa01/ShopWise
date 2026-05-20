@@ -140,6 +140,7 @@ a {
 }
 
 .admin-form input,
+.admin-form select,
 .admin-form textarea {
   background: #ffffff;
   border: 1px solid var(--border);
@@ -193,4 +194,32 @@ a {
 .table-row span {
   color: var(--muted);
   font-size: 14px;
+}
+
+.devices-row {
+  grid-template-columns: 2fr 1fr 1fr 1fr;
+}
+
+.detail-grid {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+}
+
+.detail-grid div {
+  background: #ffffff;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  display: grid;
+  gap: 8px;
+  padding: 16px;
+}
+
+.detail-grid span {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.detail-grid strong {
+  overflow-wrap: anywhere;
 }
