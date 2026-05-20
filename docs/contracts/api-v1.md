@@ -37,7 +37,7 @@ Request:
 {
   "name": "Ana",
   "email": "ana@example.com",
-  "password": "secret",
+  "password": "password123",
   "businessName": "Cafe Centro"
 }
 ```
@@ -61,7 +61,8 @@ Response:
   "user": {
     "id": "uuid",
     "email": "ana@example.com",
-    "role": "CLIENT"
+    "role": "CLIENT",
+    "businessId": "uuid"
   }
 }
 ```
@@ -69,6 +70,24 @@ Response:
 ### `GET /v1/auth/me`
 
 Returns current authenticated user.
+
+Requires:
+
+```text
+Authorization: Bearer <accessToken>
+```
+
+Response:
+
+```json
+{
+  "id": "uuid",
+  "name": "Ana",
+  "email": "ana@example.com",
+  "role": "CLIENT",
+  "businessId": "uuid"
+}
+```
 
 ## Admin Devices
 

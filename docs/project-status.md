@@ -30,6 +30,10 @@ Phase 1: Executable foundation.
 - Added Prisma schema and initial migration.
 - Added admin seed and Google Reviews device type seed.
 - Verified local web/API startup.
+- Implemented JWT auth endpoints.
+- Implemented client registration with business creation.
+- Implemented role guards and admin-only test endpoint.
+- Added minimal login/register/admin/client web routes.
 
 ## Confirmed Decisions
 
@@ -78,11 +82,9 @@ The file is a design reference only for now. The implementation should later sto
 
 ## Next Recommended Work
 
-1. Implement auth and roles.
-2. Add login/register screens.
-3. Add `GET /v1/auth/me`.
-4. Implement admin-managed device types.
-5. Implement device creation.
+1. Implement admin-managed device types.
+2. Implement device creation.
+3. Implement redirect and analytics.
 
 ## Local Verification
 
@@ -94,6 +96,7 @@ pnpm db:seed
 pnpm typecheck
 pnpm build
 pnpm lint
+pnpm test
 pnpm dev
 curl http://localhost:3001/v1/health
 curl -I http://localhost:3000
@@ -104,4 +107,5 @@ Result:
 ```text
 API health: {"status":"ok","service":"shopwise-api"}
 Web: HTTP 200
+Auth: admin login, client registration, /auth/me, and admin 403 checks pass
 ```

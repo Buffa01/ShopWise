@@ -2,6 +2,7 @@ import "reflect-metadata";
 import { ValidationPipe } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { NestFactory } from "@nestjs/core";
+import { ApiExceptionFilter } from "./common/filters/api-exception.filter";
 import { AppModule } from "./modules/app.module";
 
 async function bootstrap() {
@@ -18,6 +19,7 @@ async function bootstrap() {
       transform: true
     })
   );
+  app.useGlobalFilters(new ApiExceptionFilter());
 
   const config = app.get(ConfigService);
   const port = config.get<number>("API_PORT") ?? 3001;
@@ -25,4 +27,3 @@ async function bootstrap() {
 }
 
 void bootstrap();
-
