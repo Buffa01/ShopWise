@@ -7,7 +7,9 @@ import { AppModule } from "./modules/app.module";
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  app.setGlobalPrefix("v1");
+  app.setGlobalPrefix("v1", {
+    exclude: ["r/:code", "n/:code"]
+  });
   app.enableCors({
     origin: true,
     credentials: true

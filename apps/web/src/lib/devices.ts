@@ -5,6 +5,26 @@ import { getAccessToken } from "./auth";
 export type ProductionStatus = "CREATED" | "ASSET_GENERATED" | "DOWNLOADED" | "PRINTED" | "ERROR";
 export type AssignmentStatus = "UNASSIGNED" | "ASSIGNED";
 export type OperationalStatus = "INACTIVE" | "ACTIVE" | "PAUSED" | "DISABLED" | "ARCHIVED";
+export type DeviceEventType =
+  | "QR_SCAN"
+  | "NFC_TAP"
+  | "REDIRECT"
+  | "CLAIM"
+  | "CONFIG_UPDATE"
+  | "STATUS_CHANGE"
+  | "ASSET_GENERATED"
+  | "ASSET_DOWNLOADED"
+  | "ERROR";
+export type DeviceEventSource = "QR" | "NFC" | "UNKNOWN" | "SYSTEM";
+
+export interface DeviceEvent {
+  id: string;
+  eventType: DeviceEventType;
+  source: DeviceEventSource;
+  userAgent: string | null;
+  referrer: string | null;
+  createdAt: string;
+}
 
 export interface Device {
   id: string;
@@ -20,8 +40,10 @@ export interface Device {
   productionStatus: ProductionStatus;
   assignmentStatus: AssignmentStatus;
   operationalStatus: OperationalStatus;
+  lastScanAt: string | null;
   createdAt: string;
   updatedAt: string;
+  events?: DeviceEvent[];
   business?: {
     id: string;
     businessName: string;
@@ -79,4 +101,3 @@ export function createDeviceBatch(input: { deviceTypeId: string; quantity: numbe
     body: JSON.stringify(input)
   });
 }
-

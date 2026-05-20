@@ -40,6 +40,9 @@ Phase 1: Executable foundation.
 - Implemented batch device creation API.
 - Implemented base36 public code allocation with `CodeSequence`.
 - Implemented admin device list/detail/create/batch screens.
+- Implemented public QR/NFC redirect endpoints.
+- Implemented scan/tap/redirect event tracking.
+- Added latest events and `lastScanAt` to admin device detail.
 
 ## Confirmed Decisions
 
@@ -88,9 +91,9 @@ The file is a design reference only for now. The implementation should later sto
 
 ## Next Recommended Work
 
-1. Implement redirect and analytics.
-2. Implement QR/sticker asset generation.
-3. Implement client claim and device configuration.
+1. Implement QR/sticker asset generation.
+2. Implement client claim and device configuration.
+3. Implement admin support editing for device target/status.
 
 ## Local Verification
 
@@ -116,4 +119,5 @@ Web: HTTP 200
 Auth: admin login, client registration, /auth/me, and admin 403 checks pass
 Device types: admin list/create/update passes; client access returns 403
 Devices: single creation, batch creation, list, and detail pass
+Redirect: unconfigured fallback, active redirect, QR/NFC events, and lastScanAt pass
 ```

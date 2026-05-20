@@ -74,9 +74,34 @@ function DeviceDetailContent() {
             <span>Batch</span>
             <strong>{device.batch?.id ?? "Single device"}</strong>
           </div>
+          <div>
+            <span>Last scan</span>
+            <strong>{device.lastScanAt ? new Date(device.lastScanAt).toLocaleString() : "No scans yet"}</strong>
+          </div>
+        </section>
+      ) : null}
+
+      {device ? (
+        <section className="events-section">
+          <h2>Latest events</h2>
+          {device.events?.length ? (
+            <div className="table-list">
+              {device.events.map((event) => (
+                <div className="table-row events-row" key={event.id}>
+                  <div>
+                    <strong>{event.eventType}</strong>
+                    <span>{event.source}</span>
+                  </div>
+                  <span>{new Date(event.createdAt).toLocaleString()}</span>
+                  <span>{event.referrer ?? "No referrer"}</span>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p>No events yet.</p>
+          )}
         </section>
       ) : null}
     </main>
   );
 }
-
