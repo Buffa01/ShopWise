@@ -33,8 +33,8 @@ Tasks:
 - Add shared `packages/contracts`. Done.
 - Add PostgreSQL and Prisma. Done.
 - Add env validation.
-- Implement auth.
-- Implement role guards.
+- Implement auth. Done.
+- Implement role guards. Done.
 - Add base layouts for admin/client.
 
 Acceptance criteria:

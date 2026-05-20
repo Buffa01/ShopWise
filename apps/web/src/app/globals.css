@@ -22,3 +22,85 @@ a {
   color: inherit;
 }
 
+.auth-shell,
+.dashboard-shell {
+  min-height: 100vh;
+  padding: 48px 24px;
+}
+
+.auth-shell {
+  display: grid;
+  place-items: center;
+}
+
+.auth-panel {
+  width: min(100%, 420px);
+}
+
+.eyebrow {
+  color: var(--accent);
+  font-size: 14px;
+  font-weight: 700;
+  margin: 0 0 12px;
+}
+
+.auth-panel h1,
+.dashboard-shell h1 {
+  font-size: 40px;
+  line-height: 1.1;
+  margin: 0 0 24px;
+}
+
+.auth-form {
+  display: grid;
+  gap: 16px;
+}
+
+.auth-form label {
+  color: var(--muted);
+  display: grid;
+  font-size: 14px;
+  gap: 8px;
+}
+
+.auth-form input {
+  background: #ffffff;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--foreground);
+  font: inherit;
+  padding: 12px 14px;
+}
+
+.auth-form button {
+  background: var(--accent);
+  border: 0;
+  border-radius: 8px;
+  color: #ffffff;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 700;
+  padding: 13px 16px;
+}
+
+.auth-form button:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
+.form-error {
+  color: #b91c1c;
+  font-size: 14px;
+  margin: 0;
+}
+
+.auth-alt {
+  color: var(--muted);
+  font-size: 14px;
+  margin-top: 20px;
+}
+
+.auth-alt a {
+  color: var(--accent);
+  font-weight: 700;
+}
