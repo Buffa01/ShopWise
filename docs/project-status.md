@@ -109,9 +109,9 @@ The file is a design reference only for now. The implementation should later sto
 
 ## Next Recommended Work
 
-1. Run end-to-end browser QA for admin and client screens.
-2. Replace temporary Fly volume asset storage with Cloudflare R2.
-3. Add stored print sheet records if on-demand generation becomes too slow.
+1. Replace temporary Fly volume asset storage with Cloudflare R2.
+2. Add stored print sheet records if on-demand generation becomes too slow.
+3. Add a production-ready sticker design export workflow for Figma/PDF originals.
 
 ## Local Verification
 
@@ -147,4 +147,5 @@ Admin audit logs: admin list/filter screen, device/client shortcuts, and admin-o
 Integration tests 11A: auth/roles, device types, device creation, batch creation, claim, client config, QR/NFC redirect, metrics, audit logs, and asset download pass
 Deploy config 11B: Dockerfile, Fly API config, Prisma deploy migration command, Vercel/Fly deploy docs, and production env checklist added
 Sticker template 12A: device type base design upload, QR drag placement editor, mm-based QR dimensions, PDF generation from uploaded design, and 1300 mm batch print sheet generation pass
+Browser QA 12B: admin login, batch creation, print sheet action, client registration, and client app entry pass in the browser; PNG base designs that can hang pdf-lib are rejected or skipped safely; sticker template save now shows success feedback
 ```

@@ -28,6 +28,7 @@ export function StickerTemplateEditor({ deviceType, onChange }: StickerTemplateE
   const [xMm, setXMm] = useState(getInitialPosition(deviceType).qr.xMm);
   const [yMm, setYMm] = useState(getInitialPosition(deviceType).qr.yMm);
   const [error, setError] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
@@ -111,6 +112,7 @@ export function StickerTemplateEditor({ deviceType, onChange }: StickerTemplateE
 
   async function saveTemplate() {
     setError(null);
+    setSuccessMessage(null);
     setIsSaving(true);
 
     try {
@@ -136,6 +138,7 @@ export function StickerTemplateEditor({ deviceType, onChange }: StickerTemplateE
 
       setSelectedFile(null);
       onChange(updated);
+      setSuccessMessage("Template saved");
     } catch (saveError) {
       setError(saveError instanceof Error ? saveError.message : "Could not save sticker template");
     } finally {
@@ -205,6 +208,7 @@ export function StickerTemplateEditor({ deviceType, onChange }: StickerTemplateE
             {isSaving ? "Saving..." : "Save template"}
           </button>
           {error ? <p className="form-error">{error}</p> : null}
+          {successMessage ? <p className="form-success">{successMessage}</p> : null}
         </div>
       </div>
     </section>

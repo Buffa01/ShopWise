@@ -162,7 +162,7 @@ export class AssetsService {
       const pdfKey = device.printAssets[0]?.pdfKey;
       if (!pdfKey) continue;
 
-      const [embeddedSticker] = await sheetPdf.embedPdf(await this.storage.read(pdfKey), [0]);
+      const [embeddedSticker] = await sheetPdf.embedPdf(toPdfLibBytes(await this.storage.read(pdfKey)), [0]);
       const column = index % columns;
       const row = Math.floor(index / columns);
       const x = column * (stickerSizePoints + gapPoints);
@@ -198,7 +198,7 @@ export class AssetsService {
     const pageHeight = template.sticker.heightMm * POINTS_PER_MM;
     const pdfDoc = await PDFDocument.create();
     const page = pdfDoc.addPage([pageWidth, pageHeight]);
-    const qrImage = await pdfDoc.embedPng(input.qrPng);
+    const qrImage = await pdfDoc.embedPng(toPdfLibBytes(input.qrPng));
 
     const baseDesign = input.baseDesignKey ? await this.embedBaseDesign(pdfDoc, input.baseDesignKey) : null;
 
@@ -237,11 +237,15 @@ export class AssetsService {
     const file = await this.storage.read(key);
 
     if (key.endsWith(".png")) {
-      return pdfDoc.embedPng(file);
+      if (!isPdfLibSafePng(file)) {
+        return null;
+      }
+
+      return pdfDoc.embedPng(toPdfLibBytes(file));
     }
 
     if (key.endsWith(".jpg") || key.endsWith(".jpeg")) {
-      return pdfDoc.embedJpg(file);
+      return pdfDoc.embedJpg(toPdfLibBytes(file));
     }
 
     return null;
@@ -363,4 +367,15 @@ export class AssetsService {
 
     return Math.min(Math.max(value, min), Math.max(min, max));
   }
+}
+
+function toPdfLibBytes(data: Buffer | Uint8Array) {
+  return data.buffer.slice(data.byteOffset, data.byteOffset + data.byteLength) as ArrayBuffer;
+}
+
+function isPdfLibSafePng(data: Buffer | Uint8Array) {
+  const pngSignature = "89504e470d0a1a0a";
+  const pngColorType = data[25];
+
+  return data.length >= 26 && Buffer.from(data.subarray(0, 8)).toString("hex") === pngSignature && pngColorType !== 2;
 }

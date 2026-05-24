@@ -14,6 +14,7 @@ async function main() {
     where: { email: adminEmail },
     update: {
       name: adminName,
+      passwordHash,
       role: UserRole.ADMIN
     },
     create: {
@@ -56,4 +57,3 @@ main()
     await prisma.$disconnect();
     process.exit(1);
   });
-
