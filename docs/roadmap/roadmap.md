@@ -163,7 +163,7 @@ Tasks:
 - Add rate limiting. Done for redirect and auth endpoints.
 - Add structured logging. Done for requests, exceptions, and rate limit denials.
 - Add integration tests for critical flows. Done for API HTTP flows.
-- Add deploy configuration.
+- Add deploy configuration. Done for initial Vercel web and Fly API setup.
 - Add monitoring.
 - Run real print/scan QA.
 
@@ -171,7 +171,7 @@ Acceptance criteria:
 
 - Critical flows have automated tests. Done for API HTTP flows.
 - Redirect endpoint is rate limited. Done.
-- Production env variables are documented. Done for rate limit controls.
+- Production env variables are documented. Done for API, web, rate limit, and deploy controls.
 - Physical QR/NFC samples pass real-world testing.
 - Admin can list and filter audit logs. Done.
 

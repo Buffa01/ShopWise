@@ -11,6 +11,7 @@
     "typecheck": "tsc --noEmit",
     "prisma:generate": "dotenv -e ../../.env -- prisma generate",
     "prisma:migrate": "dotenv -e ../../.env -- prisma migrate dev",
+    "prisma:deploy": "prisma migrate deploy",
     "prisma:seed": "dotenv -e ../../.env -- tsx prisma/seed.ts"
   },
   "dependencies": {

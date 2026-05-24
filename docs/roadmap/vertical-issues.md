@@ -290,3 +290,21 @@ Acceptance criteria:
 - `pnpm --filter @shopwise/api test` runs the integration suite. Done.
 - Root `pnpm test` includes the API integration suite. Done.
 - Tests do not depend on production data and clean their own generated users, device types, devices, events, audit logs, and storage files. Done.
+
+### SWS-073 Deploy Configuration
+
+Scope:
+
+- Add API Dockerfile.
+- Add Fly.io app configuration.
+- Add Prisma migration deploy command.
+- Document Vercel web deploy.
+- Document required production environment variables and secrets.
+
+Acceptance criteria:
+
+- API image can be built from the repository root. Done.
+- Fly health check points to `/v1/health`. Done.
+- Fly release command applies Prisma migrations. Done.
+- Web deploy points to `apps/web` and uses `NEXT_PUBLIC_API_BASE_URL`. Done.
+- Temporary filesystem storage limitation is documented. Done.
