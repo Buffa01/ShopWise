@@ -109,9 +109,9 @@ The file is a design reference only for now. The implementation should later sto
 
 ## Next Recommended Work
 
-1. Replace temporary Fly volume asset storage with Cloudflare R2.
-2. Add stored print sheet records if on-demand generation becomes too slow.
-3. Add a production-ready sticker design export workflow for Figma/PDF originals.
+1. Add stored print sheet records if on-demand generation becomes too slow.
+2. Add a production-ready sticker design export workflow for Figma/PDF originals.
+3. Add an admin-facing storage usage panel if operators need live R2 quota visibility.
 
 ## Local Verification
 
@@ -148,4 +148,5 @@ Integration tests 11A: auth/roles, device types, device creation, batch creation
 Deploy config 11B: Dockerfile, Fly API config, Prisma deploy migration command, Vercel/Fly deploy docs, and production env checklist added
 Sticker template 12A: device type base design upload, QR drag placement editor, mm-based QR dimensions, PDF generation from uploaded design, and 1300 mm batch print sheet generation pass
 Browser QA 12B: admin login, batch creation, print sheet action, client registration, and client app entry pass in the browser; PNG base designs that can hang pdf-lib are rejected or skipped safely; sticker template save now shows success feedback
+Storage 13A: Cloudflare R2 storage driver, local fallback, storage object usage tracking, 9 GB default total cap, and 50 MB default object cap added
 ```

@@ -84,7 +84,15 @@ Use Cloudflare R2 for production assets:
 
 Use local filesystem storage in development behind the same storage interface.
 
-The initial Fly config mounts a small volume at `/data/storage` so the current filesystem storage implementation can run in a private MVP deploy. This should be treated as temporary. Move to R2 before scaling to multiple API machines or operating with real customer assets.
+The API supports `STORAGE_DRIVER=local` and `STORAGE_DRIVER=r2`. Production should use R2 before scaling to multiple API machines or operating with real customer assets.
+
+ShopWise enforces application-level storage controls:
+
+- `STORAGE_TOTAL_LIMIT_BYTES` defaults to 9 GB.
+- `STORAGE_MAX_OBJECT_BYTES` defaults to 50 MB.
+- Every stored object is tracked in Postgres with its key, driver, and byte size.
+
+These limits protect assets uploaded through the ShopWise API. They do not prevent direct uploads to the R2 bucket from Cloudflare or other S3 clients.
 
 ## API Deploy Configuration
 

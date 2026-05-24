@@ -14,6 +14,9 @@ export type ApiErrorCode =
   | "BUSINESS_EMAIL_ALREADY_EXISTS"
   | "RATE_LIMITED"
   | "PRINT_ASSET_NOT_FOUND"
+  | "STORAGE_OBJECT_TOO_LARGE"
+  | "STORAGE_LIMIT_EXCEEDED"
+  | "STORAGE_NOT_CONFIGURED"
   | "VALIDATION_ERROR";
 
 export interface ApiErrorResponse {
