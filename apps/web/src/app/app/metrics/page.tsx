@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { ClientAuthGate } from "../../../components/client-auth-gate";
+import { formatDateTime, useI18n } from "../../../lib/i18n";
 import { OverviewMetrics, getClientOverviewMetrics } from "../../../lib/metrics";
 
 export default function ClientMetricsPage() {
@@ -14,6 +15,7 @@ export default function ClientMetricsPage() {
 }
 
 function ClientMetricsContent() {
+  const { locale, t } = useI18n();
   const [metrics, setMetrics] = useState<OverviewMetrics | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -21,7 +23,7 @@ function ClientMetricsContent() {
     getClientOverviewMetrics()
       .then(setMetrics)
       .catch((loadError) => {
-        setError(loadError instanceof Error ? loadError.message : "Could not load metrics");
+        setError(loadError instanceof Error ? loadError.message : t("metrics.loadError"));
       });
   }, []);
 
@@ -29,47 +31,47 @@ function ClientMetricsContent() {
     <main className="dashboard-shell">
       <div className="page-header">
         <div>
-          <p className="eyebrow">Client</p>
-          <h1>Metrics</h1>
+          <p className="eyebrow">{t("common.client")}</p>
+          <h1>{t("common.metrics")}</h1>
         </div>
-        <Link href="/app">Back</Link>
+        <Link href="/app">{t("common.back")}</Link>
       </div>
 
       {error ? <p className="form-error">{error}</p> : null}
-      {!metrics && !error ? <p>Loading...</p> : null}
+      {!metrics && !error ? <p>{t("common.loading")}</p> : null}
 
       {metrics ? (
         <>
           <section className="metric-grid">
-            <MetricCard label="My devices" value={metrics.totalDevices} />
-            <MetricCard label="Active devices" value={metrics.activeDevices} />
-            <MetricCard label="Total scans" value={metrics.totalScans} />
-            <MetricCard label="QR scans" value={metrics.qrScans} />
-            <MetricCard label="NFC taps" value={metrics.nfcTaps} />
-            <MetricCard label="Redirects" value={metrics.redirects} />
+            <MetricCard label={t("metrics.myDevices")} value={metrics.totalDevices} />
+            <MetricCard label={t("metrics.activeDevices")} value={metrics.activeDevices} />
+            <MetricCard label={t("metrics.totalScans")} value={metrics.totalScans} />
+            <MetricCard label={t("metrics.qrScans")} value={metrics.qrScans} />
+            <MetricCard label={t("metrics.nfcTaps")} value={metrics.nfcTaps} />
+            <MetricCard label={t("metrics.redirects")} value={metrics.redirects} />
           </section>
 
           <section className="events-section">
-            <h2>Top devices</h2>
+            <h2>{t("metrics.topDevices")}</h2>
             {metrics.topDevices.length ? (
               <div className="table-list">
                 {metrics.topDevices.map((device) => (
                   <Link className="table-row metrics-row" href={`/app/devices/${device.deviceId}`} key={device.deviceId}>
                     <div>
                       <strong>{device.alias || device.publicCode}</strong>
-                      <span>{device.deviceTypeName ?? "Device"}</span>
+                      <span>{device.deviceTypeName ?? t("common.device")}</span>
                     </div>
-                    <span>{device.scans} scans</span>
+                    <span>{device.scans} {t("metrics.totalScans")}</span>
                   </Link>
                 ))}
               </div>
             ) : (
-              <p>No device scans yet.</p>
+              <p>{t("metrics.noDeviceScans")}</p>
             )}
           </section>
 
           <section className="events-section">
-            <h2>Scans by day</h2>
+            <h2>{t("metrics.scansByDay")}</h2>
             {metrics.scansByDay.some((point) => point.total > 0) ? (
               <div className="table-list">
                 {metrics.scansByDay
@@ -78,19 +80,19 @@ function ClientMetricsContent() {
                   .map((point) => (
                     <div className="table-row metrics-row" key={point.date}>
                       <strong>{point.date}</strong>
-                      <span>Total {point.total}</span>
+                      <span>{t("metrics.totalScans")} {point.total}</span>
                       <span>QR {point.qr}</span>
                       <span>NFC {point.nfc}</span>
                     </div>
                   ))}
               </div>
             ) : (
-              <p>No scans in the last 30 days.</p>
+              <p>{t("metrics.noScans30")}</p>
             )}
           </section>
 
           <section className="events-section">
-            <h2>Latest interactions</h2>
+            <h2>{t("metrics.latestInteractions")}</h2>
             {metrics.latestEvents?.length ? (
               <div className="table-list">
                 {metrics.latestEvents.map((event) => (
@@ -99,13 +101,13 @@ function ClientMetricsContent() {
                       <strong>{event.eventType}</strong>
                       <span>{event.device?.alias || event.device?.publicCode || event.source}</span>
                     </div>
-                    <span>{new Date(event.createdAt).toLocaleString()}</span>
-                    <span>{event.referrer ?? "No referrer"}</span>
+                    <span>{formatDateTime(locale, event.createdAt)}</span>
+                    <span>{event.referrer ?? t("common.noReferrer")}</span>
                   </div>
                 ))}
               </div>
             ) : (
-              <p>No interactions yet.</p>
+              <p>{t("metrics.noInteractions")}</p>
             )}
           </section>
         </>

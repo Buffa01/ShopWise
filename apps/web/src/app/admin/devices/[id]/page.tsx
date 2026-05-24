@@ -16,6 +16,7 @@ import {
   updateAdminDevice
 } from "../../../../lib/devices";
 import { getAccessToken } from "../../../../lib/auth";
+import { formatDateTime, translateStatus, useI18n } from "../../../../lib/i18n";
 import { DeviceMetrics, getAdminDeviceMetrics } from "../../../../lib/metrics";
 
 export default function DeviceDetailPage() {
@@ -28,6 +29,7 @@ export default function DeviceDetailPage() {
 
 function DeviceDetailContent() {
   const params = useParams<{ id: string }>();
+  const { locale, t } = useI18n();
   const [device, setDevice] = useState<Device | null>(null);
   const [clients, setClients] = useState<ClientBusiness[]>([]);
   const [alias, setAlias] = useState("");
@@ -49,7 +51,7 @@ function DeviceDetailContent() {
         hydrateForm(loadedDevice);
       })
       .catch((loadError) => {
-        setError(loadError instanceof Error ? loadError.message : "Could not load device");
+        setError(loadError instanceof Error ? loadError.message : t("admin.loadDeviceError"));
       });
   }, [params.id]);
 
@@ -76,9 +78,9 @@ function DeviceDetailContent() {
       });
       setDevice(updated);
       hydrateForm(updated);
-      setMessage("Device updated.");
+      setMessage(t("admin.deviceUpdated"));
     } catch (saveError) {
-      setError(saveError instanceof Error ? saveError.message : "Could not update device");
+      setError(saveError instanceof Error ? saveError.message : t("admin.updateDeviceError"));
     } finally {
       setIsSaving(false);
     }
@@ -95,9 +97,9 @@ function DeviceDetailContent() {
       const updated = await assignAdminDevice(params.id, assignBusinessId);
       setDevice(updated);
       hydrateForm(updated);
-      setMessage("Device assigned.");
+      setMessage(t("admin.deviceAssigned"));
     } catch (assignError) {
-      setError(assignError instanceof Error ? assignError.message : "Could not assign device");
+      setError(assignError instanceof Error ? assignError.message : t("admin.assignDeviceError"));
     } finally {
       setIsSaving(false);
     }
@@ -112,9 +114,9 @@ function DeviceDetailContent() {
       const updated = await unassignAdminDevice(params.id);
       setDevice(updated);
       hydrateForm(updated);
-      setMessage("Device unassigned and configuration cleared.");
+      setMessage(t("admin.deviceUnassigned"));
     } catch (unassignError) {
-      setError(unassignError instanceof Error ? unassignError.message : "Could not unassign device");
+      setError(unassignError instanceof Error ? unassignError.message : t("admin.unassignDeviceError"));
     } finally {
       setIsSaving(false);
     }
@@ -124,92 +126,92 @@ function DeviceDetailContent() {
     <main className="dashboard-shell">
       <div className="page-header">
         <div>
-          <p className="eyebrow">Admin</p>
-          <h1>{device?.publicCode ?? "Device detail"}</h1>
+          <p className="eyebrow">{t("common.admin")}</p>
+          <h1>{device?.publicCode ?? t("admin.deviceDetail")}</h1>
         </div>
         <div className="admin-actions">
-          <Link href="/admin/devices">Back</Link>
+          <Link href="/admin/devices">{t("common.back")}</Link>
           <Link className="button-secondary" href={`/admin/audit-logs?deviceId=${params.id}`}>
-            Audit logs
+            {t("common.auditLogs")}
           </Link>
         </div>
       </div>
 
       {error ? <p className="form-error">{error}</p> : null}
       {message ? <p className="form-success">{message}</p> : null}
-      {!device && !error ? <p>Loading...</p> : null}
+      {!device && !error ? <p>{t("common.loading")}</p> : null}
 
       {metrics ? (
         <section className="metric-grid">
-          <MetricCard label="Total scans" value={metrics.totalScans} />
-          <MetricCard label="QR scans" value={metrics.qrScans} />
-          <MetricCard label="NFC taps" value={metrics.nfcTaps} />
-          <MetricCard label="Redirects" value={metrics.redirects} />
+          <MetricCard label={t("metrics.totalScans")} value={metrics.totalScans} />
+          <MetricCard label={t("metrics.qrScans")} value={metrics.qrScans} />
+          <MetricCard label={t("metrics.nfcTaps")} value={metrics.nfcTaps} />
+          <MetricCard label={t("metrics.redirects")} value={metrics.redirects} />
         </section>
       ) : null}
 
       {device ? (
         <section className="detail-grid">
           <div>
-            <span>Type</span>
+            <span>{t("common.type")}</span>
             <strong>{device.deviceType.name}</strong>
           </div>
           <div>
-            <span>Production</span>
-            <strong>{device.productionStatus}</strong>
+            <span>{t("admin.production")}</span>
+            <strong>{translateStatus(t, device.productionStatus)}</strong>
           </div>
           <div>
-            <span>Assignment</span>
-            <strong>{device.business?.businessName ?? device.assignmentStatus}</strong>
+            <span>{t("admin.assignment")}</span>
+            <strong>{device.business?.businessName ?? translateStatus(t, device.assignmentStatus)}</strong>
           </div>
           <div>
-            <span>Operation</span>
-            <strong>{device.operationalStatus}</strong>
+            <span>{t("admin.operation")}</span>
+            <strong>{translateStatus(t, device.operationalStatus)}</strong>
           </div>
           <div>
-            <span>QR URL</span>
+            <span>{t("common.qrUrl")}</span>
             <strong>{device.qrUrl}</strong>
           </div>
           <div>
-            <span>NFC URL</span>
+            <span>{t("common.nfcUrl")}</span>
             <strong>{device.nfcUrl}</strong>
           </div>
           <div>
-            <span>Target URL</span>
-            <strong>{device.targetUrl ?? "Not configured"}</strong>
+            <span>{t("common.targetUrl")}</span>
+            <strong>{device.targetUrl ?? t("common.notSet")}</strong>
           </div>
           <div>
-            <span>Owner email</span>
-            <strong>{device.business?.owner?.email ?? "No owner"}</strong>
+            <span>{t("admin.ownerEmail")}</span>
+            <strong>{device.business?.owner?.email ?? t("common.noOwner")}</strong>
           </div>
           <div>
-            <span>Batch</span>
-            <strong>{device.batch?.id ?? "Single device"}</strong>
+            <span>{t("admin.batch")}</span>
+            <strong>{device.batch?.id ?? t("common.singleDevice")}</strong>
           </div>
           <div>
-            <span>Last scan</span>
-            <strong>{device.lastScanAt ? new Date(device.lastScanAt).toLocaleString() : "No scans yet"}</strong>
+            <span>{t("common.lastScan")}</span>
+            <strong>{device.lastScanAt ? formatDateTime(locale, device.lastScanAt) : t("common.noScans")}</strong>
           </div>
           <div>
-            <span>QR image</span>
-            <strong>{device.qrImageKey ?? "Not generated"}</strong>
+            <span>{t("admin.qrImage")}</span>
+            <strong>{device.qrImageKey ?? t("common.notGenerated")}</strong>
           </div>
           <div>
-            <span>Print asset</span>
-            <strong>{device.printAssets?.[0]?.pdfKey ?? "Not generated"}</strong>
+            <span>{t("admin.printAsset")}</span>
+            <strong>{device.printAssets?.[0]?.pdfKey ?? t("common.notGenerated")}</strong>
           </div>
         </section>
       ) : null}
 
       {device ? (
         <form className="admin-form config-form" onSubmit={onSave}>
-          <h2>Support configuration</h2>
+          <h2>{t("admin.supportConfiguration")}</h2>
           <label>
-            Alias
+            {t("common.alias")}
             <input maxLength={120} onChange={(event) => setAlias(event.target.value)} value={alias} />
           </label>
           <label>
-            Target URL
+            {t("common.targetUrl")}
             <input
               maxLength={2000}
               onChange={(event) => setTargetUrl(event.target.value)}
@@ -219,39 +221,39 @@ function DeviceDetailContent() {
             />
           </label>
           <label>
-            Production status
+            {t("admin.productionStatus")}
             <select onChange={(event) => setProductionStatus(event.target.value as ProductionStatus)} value={productionStatus}>
-              <option value="CREATED">Created</option>
-              <option value="ASSET_GENERATED">Asset generated</option>
-              <option value="DOWNLOADED">Downloaded</option>
-              <option value="PRINTED">Printed</option>
-              <option value="ERROR">Error</option>
+              <option value="CREATED">{t("status.CREATED")}</option>
+              <option value="ASSET_GENERATED">{t("status.ASSET_GENERATED")}</option>
+              <option value="DOWNLOADED">{t("status.DOWNLOADED")}</option>
+              <option value="PRINTED">{t("status.PRINTED")}</option>
+              <option value="ERROR">{t("status.ERROR")}</option>
             </select>
           </label>
           <label>
-            Operational status
+            {t("admin.operationalStatus")}
             <select onChange={(event) => setOperationalStatus(event.target.value as OperationalStatus)} value={operationalStatus}>
-              <option value="INACTIVE">Inactive</option>
-              <option value="ACTIVE">Active</option>
-              <option value="PAUSED">Paused</option>
-              <option value="DISABLED">Disabled</option>
-              <option value="ARCHIVED">Archived</option>
+              <option value="INACTIVE">{t("status.INACTIVE")}</option>
+              <option value="ACTIVE">{t("status.ACTIVE")}</option>
+              <option value="PAUSED">{t("status.PAUSED")}</option>
+              <option value="DISABLED">{t("status.DISABLED")}</option>
+              <option value="ARCHIVED">{t("status.ARCHIVED")}</option>
             </select>
           </label>
           <button disabled={isSaving} type="submit">
-            {isSaving ? "Saving..." : "Save device"}
+            {isSaving ? t("common.saving") : t("admin.saveDevice")}
           </button>
         </form>
       ) : null}
 
       {device ? (
         <section className="config-form">
-          <h2>Owner assignment</h2>
+          <h2>{t("admin.ownerAssignment")}</h2>
           <div className="admin-form">
             <label>
-              Client
+              {t("common.client")}
               <select onChange={(event) => setAssignBusinessId(event.target.value)} value={assignBusinessId}>
-                <option value="">Select client</option>
+                <option value="">{t("admin.selectClient")}</option>
                 {clients.map((client) => (
                   <option key={client.id} value={client.id}>
                     {client.businessName} - {client.owner.email}
@@ -261,10 +263,10 @@ function DeviceDetailContent() {
             </label>
             <div className="admin-actions">
               <button className="button-link" disabled={isSaving || !assignBusinessId} onClick={onAssign} type="button">
-                Assign client
+                {t("admin.assignClient")}
               </button>
               <button className="button-secondary" disabled={isSaving || !device.business} onClick={onUnassign} type="button">
-                Unassign
+                {t("admin.unassign")}
               </button>
             </div>
           </div>
@@ -293,14 +295,14 @@ function DeviceDetailContent() {
             }}
             type="button"
           >
-            Download sticker PDF
+            {t("admin.downloadStickerPdf")}
           </button>
         </div>
       ) : null}
 
       {device ? (
         <section className="events-section">
-          <h2>Latest events</h2>
+          <h2>{t("admin.latestEvents")}</h2>
           {device.events?.length ? (
             <div className="table-list">
               {device.events.map((event) => (
@@ -309,13 +311,13 @@ function DeviceDetailContent() {
                     <strong>{event.eventType}</strong>
                     <span>{event.source}</span>
                   </div>
-                  <span>{new Date(event.createdAt).toLocaleString()}</span>
-                  <span>{event.referrer ?? "No referrer"}</span>
+                  <span>{formatDateTime(locale, event.createdAt)}</span>
+                  <span>{event.referrer ?? t("common.noReferrer")}</span>
                 </div>
               ))}
             </div>
           ) : (
-            <p>No events yet.</p>
+            <p>{t("admin.noEvents")}</p>
           )}
         </section>
       ) : null}

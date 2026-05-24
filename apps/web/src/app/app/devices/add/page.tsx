@@ -5,6 +5,7 @@ import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ClientAuthGate } from "../../../../components/client-auth-gate";
 import { claimClientDevice } from "../../../../lib/devices";
+import { useI18n } from "../../../../lib/i18n";
 
 export default function AddDevicePage() {
   return (
@@ -16,6 +17,7 @@ export default function AddDevicePage() {
 
 function AddDeviceContent() {
   const router = useRouter();
+  const { t } = useI18n();
   const [codeInput, setCodeInput] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -29,7 +31,7 @@ function AddDeviceContent() {
       const device = await claimClientDevice(extractDeviceCode(codeInput));
       router.push(`/app/devices/${device.id}`);
     } catch (claimError) {
-      setError(claimError instanceof Error ? claimError.message : "Could not claim device");
+      setError(claimError instanceof Error ? claimError.message : t("client.claimDeviceError"));
     } finally {
       setIsSubmitting(false);
     }
@@ -39,15 +41,15 @@ function AddDeviceContent() {
     <main className="dashboard-shell">
       <div className="page-header">
         <div>
-          <p className="eyebrow">Client</p>
-          <h1>Add device</h1>
+          <p className="eyebrow">{t("common.client")}</p>
+          <h1>{t("client.addDeviceTitle")}</h1>
         </div>
-        <Link href="/app/devices">Back</Link>
+        <Link href="/app/devices">{t("common.back")}</Link>
       </div>
 
       <form className="admin-form" onSubmit={onSubmit}>
         <label>
-          Device code or ShopWise URL
+          {t("client.deviceCodeOrUrl")}
           <input
             autoComplete="off"
             onChange={(event) => setCodeInput(event.target.value)}
@@ -60,7 +62,7 @@ function AddDeviceContent() {
         {error ? <p className="form-error">{error}</p> : null}
 
         <button disabled={isSubmitting} type="submit">
-          {isSubmitting ? "Claiming..." : "Claim device"}
+          {isSubmitting ? t("client.claimingDevice") : t("client.claimDevice")}
         </button>
       </form>
     </main>

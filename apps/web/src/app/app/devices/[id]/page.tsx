@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import { FormEvent, useEffect, useState } from "react";
 import { ClientAuthGate } from "../../../../components/client-auth-gate";
 import { Device, getClientDevice, updateClientDevice } from "../../../../lib/devices";
+import { formatDateTime, translateStatus, useI18n } from "../../../../lib/i18n";
 import { DeviceMetrics, getClientDeviceMetrics } from "../../../../lib/metrics";
 
 type EditableOperationalStatus = "INACTIVE" | "ACTIVE" | "PAUSED";
@@ -19,6 +20,7 @@ export default function ClientDeviceDetailPage() {
 
 function ClientDeviceDetailContent() {
   const params = useParams<{ id: string }>();
+  const { locale, t } = useI18n();
   const [device, setDevice] = useState<Device | null>(null);
   const [alias, setAlias] = useState("");
   const [targetUrl, setTargetUrl] = useState("");
@@ -38,9 +40,9 @@ function ClientDeviceDetailContent() {
         setOperationalStatus(toEditableStatus(loadedDevice.operationalStatus));
       })
       .catch((loadError) => {
-        setError(loadError instanceof Error ? loadError.message : "Could not load device");
+        setError(loadError instanceof Error ? loadError.message : t("client.loadDeviceError"));
       });
-  }, [params.id]);
+  }, [params.id, t]);
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -58,9 +60,9 @@ function ClientDeviceDetailContent() {
       setAlias(updatedDevice.alias ?? "");
       setTargetUrl(updatedDevice.targetUrl ?? "");
       setOperationalStatus(toEditableStatus(updatedDevice.operationalStatus));
-      setMessage("Device updated.");
+      setMessage(t("client.deviceUpdated"));
     } catch (saveError) {
-      setError(saveError instanceof Error ? saveError.message : "Could not update device");
+      setError(saveError instanceof Error ? saveError.message : t("client.updateDeviceError"));
     } finally {
       setIsSaving(false);
     }
@@ -70,57 +72,57 @@ function ClientDeviceDetailContent() {
     <main className="dashboard-shell">
       <div className="page-header">
         <div>
-          <p className="eyebrow">Client</p>
-          <h1>{device?.alias || device?.publicCode || "Device detail"}</h1>
+          <p className="eyebrow">{t("common.client")}</p>
+          <h1>{device?.alias || device?.publicCode || t("client.deviceDetail")}</h1>
         </div>
-        <Link href="/app/devices">Back</Link>
+        <Link href="/app/devices">{t("common.back")}</Link>
       </div>
 
       {error ? <p className="form-error">{error}</p> : null}
       {message ? <p className="form-success">{message}</p> : null}
-      {!device && !error ? <p>Loading...</p> : null}
+      {!device && !error ? <p>{t("common.loading")}</p> : null}
 
       {device ? (
         <>
           {metrics ? (
             <section className="metric-grid">
-              <MetricCard label="Total scans" value={metrics.totalScans} />
-              <MetricCard label="QR scans" value={metrics.qrScans} />
-              <MetricCard label="NFC taps" value={metrics.nfcTaps} />
-              <MetricCard label="Redirects" value={metrics.redirects} />
+              <MetricCard label={t("metrics.totalScans")} value={metrics.totalScans} />
+              <MetricCard label={t("metrics.qrScans")} value={metrics.qrScans} />
+              <MetricCard label={t("metrics.nfcTaps")} value={metrics.nfcTaps} />
+              <MetricCard label={t("metrics.redirects")} value={metrics.redirects} />
             </section>
           ) : null}
 
           <section className="detail-grid">
             <div>
-              <span>Code</span>
+              <span>{t("common.code")}</span>
               <strong>{device.publicCode}</strong>
             </div>
             <div>
-              <span>Type</span>
+              <span>{t("common.type")}</span>
               <strong>{device.deviceType.name}</strong>
             </div>
             <div>
-              <span>Status</span>
-              <strong>{device.operationalStatus}</strong>
+              <span>{t("common.status")}</span>
+              <strong>{translateStatus(t, device.operationalStatus)}</strong>
             </div>
             <div>
-              <span>Last scan</span>
-              <strong>{device.lastScanAt ? new Date(device.lastScanAt).toLocaleString() : "No scans yet"}</strong>
+              <span>{t("common.lastScan")}</span>
+              <strong>{device.lastScanAt ? formatDateTime(locale, device.lastScanAt) : t("common.noScans")}</strong>
             </div>
             <div>
-              <span>QR URL</span>
+              <span>{t("common.qrUrl")}</span>
               <strong>{device.qrUrl}</strong>
             </div>
             <div>
-              <span>NFC URL</span>
+              <span>{t("common.nfcUrl")}</span>
               <strong>{device.nfcUrl}</strong>
             </div>
           </section>
 
           <form className="admin-form config-form" onSubmit={onSubmit}>
             <label>
-              Alias
+              {t("common.alias")}
               <input
                 maxLength={120}
                 onChange={(event) => setAlias(event.target.value)}
@@ -130,7 +132,7 @@ function ClientDeviceDetailContent() {
             </label>
 
             <label>
-              Target URL
+              {t("common.targetUrl")}
               <input
                 maxLength={2000}
                 onChange={(event) => setTargetUrl(event.target.value)}
@@ -141,24 +143,24 @@ function ClientDeviceDetailContent() {
             </label>
 
             <label>
-              Device status
+              {t("common.deviceStatus")}
               <select
                 onChange={(event) => setOperationalStatus(event.target.value as EditableOperationalStatus)}
                 value={operationalStatus}
               >
-                <option value="ACTIVE">Active</option>
-                <option value="PAUSED">Paused</option>
-                <option value="INACTIVE">Inactive</option>
+                <option value="ACTIVE">{t("status.ACTIVE")}</option>
+                <option value="PAUSED">{t("status.PAUSED")}</option>
+                <option value="INACTIVE">{t("status.INACTIVE")}</option>
               </select>
             </label>
 
             <button disabled={isSaving} type="submit">
-              {isSaving ? "Saving..." : "Save configuration"}
+              {isSaving ? t("common.saving") : t("client.saveConfiguration")}
             </button>
           </form>
 
           <section className="events-section">
-            <h2>Latest interactions</h2>
+            <h2>{t("metrics.latestInteractions")}</h2>
             {device.events?.length ? (
               <div className="table-list">
                 {device.events.map((event) => (
@@ -167,13 +169,13 @@ function ClientDeviceDetailContent() {
                       <strong>{event.eventType}</strong>
                       <span>{event.source}</span>
                     </div>
-                    <span>{new Date(event.createdAt).toLocaleString()}</span>
-                    <span>{event.referrer ?? "No referrer"}</span>
+                    <span>{formatDateTime(locale, event.createdAt)}</span>
+                    <span>{event.referrer ?? t("common.noReferrer")}</span>
                   </div>
                 ))}
               </div>
             ) : (
-              <p>No interactions yet.</p>
+              <p>{t("metrics.noInteractions")}</p>
             )}
           </section>
         </>

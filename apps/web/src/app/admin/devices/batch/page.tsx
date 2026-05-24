@@ -6,9 +6,11 @@ import { AdminAuthGate } from "../../../../components/admin-auth-gate";
 import { DeviceCreateForm } from "../../../../components/device-create-form";
 import { createDeviceBatch, DeviceBatch, getBatchPrintSheetUrl } from "../../../../lib/devices";
 import { getAccessToken } from "../../../../lib/auth";
+import { translateStatus, useI18n } from "../../../../lib/i18n";
 
 export default function NewDeviceBatchPage() {
   const [batch, setBatch] = useState<DeviceBatch | null>(null);
+  const { t } = useI18n();
 
   return (
     <AdminAuthGate>
@@ -16,10 +18,10 @@ export default function NewDeviceBatchPage() {
         <main className="dashboard-shell">
           <div className="page-header">
             <div>
-              <p className="eyebrow">Admin</p>
-              <h1>New device batch</h1>
+              <p className="eyebrow">{t("common.admin")}</p>
+              <h1>{t("admin.newDeviceBatch")}</h1>
             </div>
-            <Link href="/admin/devices">Back</Link>
+            <Link href="/admin/devices">{t("common.back")}</Link>
           </div>
           <DeviceCreateForm
             mode="batch"
@@ -31,33 +33,33 @@ export default function NewDeviceBatchPage() {
               });
               setBatch(createdBatch);
             }}
-            submitLabel="Create batch"
+            submitLabel={t("admin.createBatch")}
           />
           {batch ? (
             <section className="events-section">
-              <h2>Batch created</h2>
+              <h2>{t("admin.batchCreated")}</h2>
               <div className="detail-grid">
                 <div>
-                  <span>Quantity</span>
+                  <span>{t("common.quantity")}</span>
                   <strong>{batch.devices.length}</strong>
                 </div>
                 <div>
-                  <span>Status</span>
-                  <strong>{batch.status}</strong>
+                  <span>{t("common.status")}</span>
+                  <strong>{translateStatus(t, batch.status)}</strong>
                 </div>
                 <div>
-                  <span>First device</span>
-                  <strong>{batch.devices[0]?.publicCode ?? "No devices"}</strong>
+                  <span>{t("admin.firstDevice")}</span>
+                  <strong>{batch.devices[0]?.publicCode ?? t("admin.noDevices")}</strong>
                 </div>
               </div>
               <div className="asset-actions admin-actions">
                 {batch.devices[0] ? (
                   <Link className="button-secondary" href={`/admin/devices/${batch.devices[0].id}`}>
-                    Open first device
+                    {t("admin.openFirstDevice")}
                   </Link>
                 ) : null}
                 <button className="button-link" onClick={() => downloadBatchSheet(batch)} type="button">
-                  Download print sheet PDF
+                  {t("admin.downloadPrintSheet")}
                 </button>
               </div>
             </section>

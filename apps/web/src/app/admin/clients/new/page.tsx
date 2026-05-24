@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { FormEvent, useState } from "react";
 import { AdminAuthGate } from "../../../../components/admin-auth-gate";
 import { createClient } from "../../../../lib/clients";
+import { useI18n } from "../../../../lib/i18n";
 
 export default function NewClientPage() {
   return (
@@ -16,6 +17,7 @@ export default function NewClientPage() {
 
 function NewClientContent() {
   const router = useRouter();
+  const { t } = useI18n();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -43,7 +45,7 @@ function NewClientContent() {
       });
       router.push(`/admin/clients/${client.id}`);
     } catch (createError) {
-      setError(createError instanceof Error ? createError.message : "Could not create client");
+      setError(createError instanceof Error ? createError.message : t("admin.createClientError"));
     } finally {
       setIsSubmitting(false);
     }
@@ -53,46 +55,46 @@ function NewClientContent() {
     <main className="dashboard-shell">
       <div className="page-header">
         <div>
-          <p className="eyebrow">Admin</p>
-          <h1>New client</h1>
+          <p className="eyebrow">{t("common.admin")}</p>
+          <h1>{t("admin.newClient")}</h1>
         </div>
-        <Link href="/admin/clients">Back</Link>
+        <Link href="/admin/clients">{t("common.back")}</Link>
       </div>
 
       <form className="admin-form" onSubmit={onSubmit}>
         <label>
-          Name
+          {t("common.name")}
           <input onChange={(event) => setName(event.target.value)} value={name} />
         </label>
         <label>
-          Email
+          {t("common.email")}
           <input onChange={(event) => setEmail(event.target.value)} required type="email" value={email} />
         </label>
         <label>
-          Temporary password
+          {t("common.temporaryPassword")}
           <input minLength={8} onChange={(event) => setPassword(event.target.value)} required type="password" value={password} />
         </label>
         <label>
-          Business name
+          {t("auth.businessName")}
           <input minLength={2} onChange={(event) => setBusinessName(event.target.value)} required value={businessName} />
         </label>
         <label>
-          Phone
+          {t("common.phone")}
           <input onChange={(event) => setPhone(event.target.value)} value={phone} />
         </label>
         <label>
-          Address
+          {t("common.address")}
           <input onChange={(event) => setAddress(event.target.value)} value={address} />
         </label>
         <label>
-          Google Review URL
+          {t("common.googleReviewUrl")}
           <input onChange={(event) => setGoogleReviewUrl(event.target.value)} type="url" value={googleReviewUrl} />
         </label>
 
         {error ? <p className="form-error">{error}</p> : null}
 
         <button disabled={isSubmitting} type="submit">
-          {isSubmitting ? "Creating..." : "Create client"}
+          {isSubmitting ? t("admin.creatingClient") : t("admin.createClient")}
         </button>
       </form>
     </main>
