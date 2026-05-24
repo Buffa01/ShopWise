@@ -160,8 +160,8 @@ Acceptance criteria:
 Tasks:
 
 - Add audit log coverage.
-- Add rate limiting.
-- Add structured logging.
+- Add rate limiting. Done for redirect and auth endpoints.
+- Add structured logging. Done for requests, exceptions, and rate limit denials.
 - Add integration tests for critical flows.
 - Add deploy configuration.
 - Add monitoring.
@@ -170,8 +170,8 @@ Tasks:
 Acceptance criteria:
 
 - Critical flows have automated tests.
-- Redirect endpoint is monitored.
-- Production env variables are documented.
+- Redirect endpoint is rate limited. Done.
+- Production env variables are documented. Done for rate limit controls.
 - Physical QR/NFC samples pass real-world testing.
 
 ## First Programming Tasks
