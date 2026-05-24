@@ -6,7 +6,7 @@ Initial production target:
 Web:      Vercel
 API:      Fly.io
 Database: Supabase Postgres
-Storage:  Fly volume for the first deploy, Cloudflare R2 before real production operations
+Storage:  Local filesystem for development, Cloudflare R2 for production assets
 ```
 
 The repository includes deploy configuration for the API. The web app should be deployed from Vercel using `apps/web` as the project root.
@@ -22,6 +22,8 @@ ADMIN_EMAIL
 ADMIN_PASSWORD
 ADMIN_NAME
 IP_HASH_SALT
+R2_ACCESS_KEY_ID
+R2_SECRET_ACCESS_KEY
 ```
 
 Web environment:
@@ -53,7 +55,9 @@ fly secrets set \
   ADMIN_EMAIL="admin@shopwise.uy" \
   ADMIN_PASSWORD="replace-with-strong-password" \
   ADMIN_NAME="ShopWise Admin" \
-  IP_HASH_SALT="replace-with-random-salt"
+  IP_HASH_SALT="replace-with-random-salt" \
+  R2_ACCESS_KEY_ID="replace-with-r2-access-key-id" \
+  R2_SECRET_ACCESS_KEY="replace-with-r2-secret-access-key"
 ```
 
 Deploy:
@@ -127,13 +131,35 @@ Production database rules:
 
 ## Storage
 
-This deploy config uses a Fly volume at `/data/storage` because the current storage implementation is filesystem-based.
+The API supports two storage drivers:
 
-This is acceptable for an initial private MVP, but Cloudflare R2 should replace local production storage before real customer operations because:
+```text
+STORAGE_DRIVER=local
+STORAGE_DRIVER=r2
+```
 
-- Fly volumes are attached to one region/machine.
-- Scaling multiple API machines with local asset storage is unsafe.
-- R2 is cheaper and better for long-term printable assets.
+Use local filesystem storage for development and short-lived private environments. Use Cloudflare R2 for production assets.
+
+Production R2 configuration:
+
+```text
+STORAGE_DRIVER=r2
+R2_BUCKET=shopwise-assets-production
+R2_ENDPOINT=https://<account-id>.r2.cloudflarestorage.com
+R2_ACCESS_KEY_ID=<secret>
+R2_SECRET_ACCESS_KEY=<secret>
+```
+
+Storage limits are enforced by the API before writing objects:
+
+```text
+STORAGE_TOTAL_LIMIT_BYTES=9000000000
+STORAGE_MAX_OBJECT_BYTES=52428800
+```
+
+The default total limit is 9 GB and the default per-object limit is 50 MB. This is an application-level guard for ShopWise uploads; direct uploads made outside the app can still increase bucket usage.
+
+No R2 public development URL or custom domain is required for private production storage. The API reads from R2 and serves authenticated downloads.
 
 ## Pre-Deploy Checklist
 

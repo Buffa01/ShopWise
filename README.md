@@ -82,7 +82,7 @@ Initial deploy targets:
 Web:      Vercel
 API:      Fly.io
 Database: Supabase Postgres
-Storage:  Fly volume initially, Cloudflare R2 before real production operations
+Storage:  Local filesystem in development, Cloudflare R2 for production assets
 ```
 
 See [Deploy guide](docs/deploy.md).

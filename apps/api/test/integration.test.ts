@@ -20,7 +20,10 @@ import { PrismaService } from "../src/prisma/prisma.service";
 process.env.JWT_SECRET = process.env.JWT_SECRET ?? "integration-test-secret";
 process.env.RATE_LIMIT_AUTH_MAX = "1000";
 process.env.RATE_LIMIT_REDIRECT_MAX = "1000";
+process.env.STORAGE_DRIVER = "local";
 process.env.STORAGE_LOCAL_DIR = "storage-test";
+process.env.STORAGE_TOTAL_LIMIT_BYTES = "9000000000";
+process.env.STORAGE_MAX_OBJECT_BYTES = "52428800";
 process.env.SHORT_LINK_BASE_URL = "https://sw.test";
 
 const TEST_RUN_ID = `it${Date.now()}`;
@@ -173,6 +176,13 @@ async function main() {
     assert.equal(assetDownload.status, 200);
     assert.equal(assetDownload.headers.get("content-type"), "application/pdf");
 
+    const storageUsage = await prisma.storageObject.aggregate({
+      _sum: { byteSize: true },
+      _count: true
+    });
+    assert.ok(storageUsage._count >= 4);
+    assert.ok((storageUsage._sum.byteSize ?? 0n) > 0n);
+
     console.log("Integration tests passed");
   } finally {
     await cleanTestData(prisma);
@@ -275,6 +285,14 @@ async function cleanTestData(prisma: PrismaService) {
         { targetUserId: { in: userIds } },
         { businessId: { in: businessIds } },
         { deviceId: { in: deviceIds } }
+      ]
+    }
+  });
+  await prisma.storageObject.deleteMany({
+    where: {
+      OR: [
+        { key: { startsWith: `devices/${TEST_PREFIX}` } },
+        ...deviceTypeIds.map((id) => ({ key: { startsWith: `device-types/${id}/` } }))
       ]
     }
   });

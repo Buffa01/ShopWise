@@ -178,6 +178,18 @@ model PrintAsset {
   @@index([deviceId])
 }
 
+model StorageObject {
+  id        String   @id @default(uuid())
+  key       String   @unique
+  byteSize  BigInt
+  driver    String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([driver])
+  @@index([updatedAt])
+}
+
 model DeviceEvent {
   id        String            @id @default(uuid())
   deviceId  String?
