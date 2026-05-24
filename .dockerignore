@@ -1,0 +1,15 @@
+.git
+**/.next
+**/.turbo
+**/dist
+**/node_modules
+storage
+storage-test
+.env
+.env.*
+!.env.example
+Dockerfile
+README.md
+docs
+*.log
+coverage

@@ -8,8 +8,10 @@ Recommended initial setup:
 Web:      Vercel
 API:      Fly.io
 Database: Supabase Postgres
-Storage:  Cloudflare R2
+Storage:  Fly volume for the first private deploy, Cloudflare R2 before real production operations
 ```
+
+See the executable deploy guide in [`docs/deploy.md`](../deploy.md).
 
 ## Domains
 
@@ -81,6 +83,38 @@ Use Cloudflare R2 for production assets:
 - Future template assets.
 
 Use local filesystem storage in development behind the same storage interface.
+
+The initial Fly config mounts a small volume at `/data/storage` so the current filesystem storage implementation can run in a private MVP deploy. This should be treated as temporary. Move to R2 before scaling to multiple API machines or operating with real customer assets.
+
+## API Deploy Configuration
+
+The repository includes:
+
+```text
+Dockerfile
+fly.toml
+.dockerignore
+```
+
+Fly applies Prisma migrations during deploy through:
+
+```text
+pnpm --filter @shopwise/api prisma:deploy
+```
+
+The API health check is:
+
+```text
+GET /v1/health
+```
+
+## Web Deploy Configuration
+
+Deploy `apps/web` to Vercel and set:
+
+```text
+NEXT_PUBLIC_API_BASE_URL=https://api.shopwise.uy/v1
+```
 
 ## Cost Control Rules
 

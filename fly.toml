@@ -1,0 +1,49 @@
+app = "shopwise-api"
+primary_region = "mia"
+kill_signal = "SIGINT"
+kill_timeout = "5s"
+
+[build]
+  dockerfile = "Dockerfile"
+
+[deploy]
+  release_command = "pnpm --filter @shopwise/api prisma:deploy"
+
+[env]
+  API_PORT = "8080"
+  NODE_ENV = "production"
+  SHORT_LINK_BASE_URL = "https://sw.uy"
+  STORAGE_LOCAL_DIR = "/data/storage"
+  RATE_LIMIT_REDIRECT_WINDOW_MS = "60000"
+  RATE_LIMIT_REDIRECT_MAX = "120"
+  RATE_LIMIT_AUTH_WINDOW_MS = "60000"
+  RATE_LIMIT_AUTH_MAX = "20"
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  auto_stop_machines = "stop"
+  auto_start_machines = true
+  min_machines_running = 1
+  processes = ["app"]
+
+  [http_service.concurrency]
+    type = "requests"
+    hard_limit = 200
+    soft_limit = 150
+
+  [[http_service.checks]]
+    interval = "15s"
+    timeout = "2s"
+    grace_period = "10s"
+    method = "GET"
+    path = "/v1/health"
+
+[[mounts]]
+  source = "shopwise_storage"
+  destination = "/data"
+
+[[vm]]
+  memory = "512mb"
+  cpu_kind = "shared"
+  cpus = 1

@@ -24,6 +24,7 @@ Start here:
 - [Risks and decisions](docs/specs/08-risks-and-open-decisions.md)
 - [Acceptance criteria](docs/specs/09-acceptance-criteria.md)
 - [Costs and deploy](docs/specs/10-costs-and-deploy.md)
+- [Deploy guide](docs/deploy.md)
 - [Analytics retention](docs/specs/11-analytics-retention.md)
 - [Device types](docs/specs/12-device-types.md)
 - [Project status](docs/project-status.md)
@@ -72,3 +73,16 @@ Postgres: localhost:5433
 ```
 
 ShopWise uses `5433` locally to avoid conflicts with other local Postgres containers.
+
+## Deploy
+
+Initial deploy targets:
+
+```text
+Web:      Vercel
+API:      Fly.io
+Database: Supabase Postgres
+Storage:  Fly volume initially, Cloudflare R2 before real production operations
+```
+
+See [Deploy guide](docs/deploy.md).
