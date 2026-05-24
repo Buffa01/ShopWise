@@ -7,7 +7,7 @@
     "build": "tsc -p tsconfig.build.json",
     "start": "node dist/main.js",
     "lint": "tsc --noEmit",
-    "test": "echo \"No API tests yet\"",
+    "test": "dotenv -e ../../.env -- tsx test/integration.test.ts",
     "typecheck": "tsc --noEmit",
     "prisma:generate": "dotenv -e ../../.env -- prisma generate",
     "prisma:migrate": "dotenv -e ../../.env -- prisma migrate dev",

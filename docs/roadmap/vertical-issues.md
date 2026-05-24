@@ -275,3 +275,18 @@ Acceptance criteria:
 - Redirect endpoint remains fast.
 - Abusive traffic is limited.
 - Errors are observable.
+
+### SWS-072 Integration Tests
+
+Scope:
+
+- Exercise critical API flows through real HTTP against the Nest app.
+- Cover admin/client auth and role boundaries.
+- Cover device type creation, single and batch device creation, claim, client configuration, QR/NFC redirect, metrics, audit log access, and asset download.
+- Reset test-owned data before and after each run.
+
+Acceptance criteria:
+
+- `pnpm --filter @shopwise/api test` runs the integration suite. Done.
+- Root `pnpm test` includes the API integration suite. Done.
+- Tests do not depend on production data and clean their own generated users, device types, devices, events, audit logs, and storage files. Done.
