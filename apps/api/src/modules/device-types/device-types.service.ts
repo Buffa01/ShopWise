@@ -158,12 +158,8 @@ export class DeviceTypesService {
       return;
     }
 
-    const pngColorType = buffer[25];
-    if (buffer.length < 26 || buffer.toString("hex", 0, 8) !== "89504e470d0a1a0a" || pngColorType === 2) {
-      throw badRequest(
-        "VALIDATION_ERROR",
-        "PNG designs must be exported with transparency/alpha or uploaded as JPG to generate printable PDFs safely"
-      );
+    if (buffer.length < 26 || buffer.toString("hex", 0, 8) !== "89504e470d0a1a0a") {
+      throw badRequest("VALIDATION_ERROR", "Invalid PNG design image");
     }
   }
 }

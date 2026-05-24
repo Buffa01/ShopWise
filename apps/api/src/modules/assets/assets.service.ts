@@ -237,10 +237,6 @@ export class AssetsService {
     const file = await this.storage.read(key);
 
     if (key.endsWith(".png")) {
-      if (!isPdfLibSafePng(file)) {
-        return null;
-      }
-
       return pdfDoc.embedPng(toPdfLibBytes(file));
     }
 
@@ -371,11 +367,4 @@ export class AssetsService {
 
 function toPdfLibBytes(data: Buffer | Uint8Array) {
   return data.buffer.slice(data.byteOffset, data.byteOffset + data.byteLength) as ArrayBuffer;
-}
-
-function isPdfLibSafePng(data: Buffer | Uint8Array) {
-  const pngSignature = "89504e470d0a1a0a";
-  const pngColorType = data[25];
-
-  return data.length >= 26 && Buffer.from(data.subarray(0, 8)).toString("hex") === pngSignature && pngColorType !== 2;
 }
