@@ -3,10 +3,13 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FormEvent, useState } from "react";
+import { LanguageSelector } from "../../components/language-selector";
 import { getHomePathForRole, login, setAccessToken } from "../../lib/auth";
+import { useI18n } from "../../lib/i18n";
 
 export default function LoginPage() {
   const router = useRouter();
+  const { t } = useI18n();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -22,7 +25,7 @@ export default function LoginPage() {
       setAccessToken(response.accessToken);
       router.push(getHomePathForRole(response.user.role));
     } catch (requestError) {
-      setError(requestError instanceof Error ? requestError.message : "Could not log in");
+      setError(requestError instanceof Error ? requestError.message : t("auth.loginError"));
     } finally {
       setIsSubmitting(false);
     }
@@ -30,12 +33,15 @@ export default function LoginPage() {
 
   return (
     <main className="auth-shell">
+      <div className="top-bar">
+        <LanguageSelector />
+      </div>
       <section className="auth-panel">
         <p className="eyebrow">ShopWise</p>
-        <h1>Log in</h1>
+        <h1>{t("auth.loginTitle")}</h1>
         <form onSubmit={onSubmit} className="auth-form">
           <label>
-            Email
+            {t("common.email")}
             <input
               autoComplete="email"
               name="email"
@@ -46,7 +52,7 @@ export default function LoginPage() {
             />
           </label>
           <label>
-            Password
+            {t("common.password")}
             <input
               autoComplete="current-password"
               minLength={8}
@@ -59,14 +65,13 @@ export default function LoginPage() {
           </label>
           {error ? <p className="form-error">{error}</p> : null}
           <button disabled={isSubmitting} type="submit">
-            {isSubmitting ? "Logging in..." : "Log in"}
+            {isSubmitting ? t("auth.loggingIn") : t("auth.loginAction")}
           </button>
         </form>
         <p className="auth-alt">
-          New to ShopWise? <Link href="/register">Create an account</Link>
+          {t("auth.newToShopWise")} <Link href="/register">{t("auth.createAccount")}</Link>
         </p>
       </section>
     </main>
   );
 }
-

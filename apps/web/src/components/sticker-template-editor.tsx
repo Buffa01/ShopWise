@@ -8,6 +8,7 @@ import {
   updateDeviceType,
   uploadDeviceTypeDesign
 } from "../lib/device-types";
+import { useI18n } from "../lib/i18n";
 
 const DEFAULT_STICKER_SIZE_MM = 100;
 const DEFAULT_QR_SIZE_MM = 32;
@@ -18,6 +19,7 @@ interface StickerTemplateEditorProps {
 }
 
 export function StickerTemplateEditor({ deviceType, onChange }: StickerTemplateEditorProps) {
+  const { t } = useI18n();
   const previewRef = useRef<HTMLDivElement | null>(null);
   const [designUrl, setDesignUrl] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -120,7 +122,7 @@ export function StickerTemplateEditor({ deviceType, onChange }: StickerTemplateE
 
       if (selectedFile) {
         updated = await uploadDeviceTypeDesign(deviceType.id, {
-          contentType: toSupportedContentType(selectedFile.type),
+          contentType: toSupportedContentType(selectedFile.type, t("template.unsupportedType")),
           fileName: selectedFile.name,
           dataUrl: await readFileAsDataUrl(selectedFile)
         });
@@ -138,9 +140,9 @@ export function StickerTemplateEditor({ deviceType, onChange }: StickerTemplateE
 
       setSelectedFile(null);
       onChange(updated);
-      setSuccessMessage("Template saved");
+      setSuccessMessage(t("template.saved"));
     } catch (saveError) {
-      setError(saveError instanceof Error ? saveError.message : "Could not save sticker template");
+      setError(saveError instanceof Error ? saveError.message : t("template.saveError"));
     } finally {
       setIsSaving(false);
     }
@@ -149,18 +151,18 @@ export function StickerTemplateEditor({ deviceType, onChange }: StickerTemplateE
   return (
     <section className="template-editor">
       <div>
-        <p className="eyebrow">Sticker template</p>
-        <h2>QR placement</h2>
+        <p className="eyebrow">{t("template.title")}</p>
+        <h2>{t("template.qrPlacement")}</h2>
       </div>
 
       <div className="template-editor-grid">
         <div className="template-preview" ref={previewRef}>
           {selectedDesignUrl ? (
-            <img alt="Selected sticker design" src={selectedDesignUrl} />
+            <img alt={t("template.uploadDesign")} src={selectedDesignUrl} />
           ) : designUrl ? (
-            <img alt="Sticker design" src={designUrl} />
+            <img alt={t("template.title")} src={designUrl} />
           ) : (
-            <div className="template-preview-empty">Upload sticker design</div>
+            <div className="template-preview-empty">{t("template.uploadDesign")}</div>
           )}
           <div
             className="qr-placement-box"
@@ -173,7 +175,7 @@ export function StickerTemplateEditor({ deviceType, onChange }: StickerTemplateE
 
         <div className="admin-form template-controls">
           <label>
-            Base design PNG/JPG
+            {t("template.baseDesign")}
             <input
               accept="image/png,image/jpeg"
               onChange={(event) => setSelectedFile(event.target.files?.[0] ?? null)}
@@ -181,7 +183,7 @@ export function StickerTemplateEditor({ deviceType, onChange }: StickerTemplateE
             />
           </label>
           <label>
-            Sticker diameter
+            {t("template.stickerDiameter")}
             <input
               min={20}
               onChange={(event) => onStickerSizeChange(event.target.value)}
@@ -190,11 +192,11 @@ export function StickerTemplateEditor({ deviceType, onChange }: StickerTemplateE
             />
           </label>
           <label>
-            QR width
+            {t("template.qrWidth")}
             <input min={5} onChange={(event) => onQrWidthChange(event.target.value)} type="number" value={qrWidthMm} />
           </label>
           <label>
-            QR height
+            {t("template.qrHeight")}
             <input min={5} onChange={(event) => onQrHeightChange(event.target.value)} type="number" value={qrHeightMm} />
           </label>
           <div className="template-position-readout">
@@ -202,10 +204,10 @@ export function StickerTemplateEditor({ deviceType, onChange }: StickerTemplateE
             <span>Y: {yMm}mm</span>
           </div>
           <button className="button-secondary" onClick={() => centerQr(stickerSizeMm, qrWidthMm, qrHeightMm, setXMm, setYMm)} type="button">
-            Center QR
+            {t("template.centerQr")}
           </button>
           <button disabled={isSaving} onClick={saveTemplate} type="button">
-            {isSaving ? "Saving..." : "Save template"}
+            {isSaving ? t("common.saving") : t("template.save")}
           </button>
           {error ? <p className="form-error">{error}</p> : null}
           {successMessage ? <p className="form-success">{successMessage}</p> : null}
@@ -291,12 +293,12 @@ function roundMm(value: number) {
   return Math.round(value * 10) / 10;
 }
 
-function toSupportedContentType(value: string): "image/png" | "image/jpeg" {
+function toSupportedContentType(value: string, errorMessage: string): "image/png" | "image/jpeg" {
   if (value === "image/png" || value === "image/jpeg") {
     return value;
   }
 
-  throw new Error("Only PNG and JPG designs are supported");
+  throw new Error(errorMessage);
 }
 
 function readFileAsDataUrl(file: File) {

@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { AdminAuthGate } from "../../../../components/admin-auth-gate";
 import { ClientBusiness, getClient } from "../../../../lib/clients";
+import { formatDate, translateStatus, useI18n } from "../../../../lib/i18n";
 
 export default function ClientDetailPage() {
   return (
@@ -16,6 +17,7 @@ export default function ClientDetailPage() {
 
 function ClientDetailContent() {
   const params = useParams<{ id: string }>();
+  const { locale, t } = useI18n();
   const [client, setClient] = useState<ClientBusiness | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -23,7 +25,7 @@ function ClientDetailContent() {
     getClient(params.id)
       .then(setClient)
       .catch((loadError) => {
-        setError(loadError instanceof Error ? loadError.message : "Could not load client");
+        setError(loadError instanceof Error ? loadError.message : t("admin.loadClientError"));
       });
   }, [params.id]);
 
@@ -31,51 +33,51 @@ function ClientDetailContent() {
     <main className="dashboard-shell">
       <div className="page-header">
         <div>
-          <p className="eyebrow">Admin</p>
-          <h1>{client?.businessName ?? "Client detail"}</h1>
+          <p className="eyebrow">{t("common.admin")}</p>
+          <h1>{client?.businessName ?? t("admin.clientDetail")}</h1>
         </div>
         <div className="admin-actions">
-          <Link href="/admin/clients">Back</Link>
+          <Link href="/admin/clients">{t("common.back")}</Link>
           <Link className="button-secondary" href={`/admin/audit-logs?businessId=${params.id}`}>
-            Audit logs
+            {t("common.auditLogs")}
           </Link>
         </div>
       </div>
 
       {error ? <p className="form-error">{error}</p> : null}
-      {!client && !error ? <p>Loading...</p> : null}
+      {!client && !error ? <p>{t("common.loading")}</p> : null}
 
       {client ? (
         <>
           <section className="detail-grid">
             <div>
-              <span>Business</span>
+              <span>{t("common.business")}</span>
               <strong>{client.businessName}</strong>
             </div>
             <div>
-              <span>Owner</span>
-              <strong>{client.owner.name ?? "No name"}</strong>
+              <span>{t("common.owner")}</span>
+              <strong>{client.owner.name ?? t("common.noName")}</strong>
             </div>
             <div>
-              <span>Email</span>
+              <span>{t("common.email")}</span>
               <strong>{client.owner.email}</strong>
             </div>
             <div>
-              <span>Phone</span>
-              <strong>{client.phone ?? "Not set"}</strong>
+              <span>{t("common.phone")}</span>
+              <strong>{client.phone ?? t("common.notSet")}</strong>
             </div>
             <div>
-              <span>Address</span>
-              <strong>{client.address ?? "Not set"}</strong>
+              <span>{t("common.address")}</span>
+              <strong>{client.address ?? t("common.notSet")}</strong>
             </div>
             <div>
-              <span>Google Review URL</span>
-              <strong>{client.googleReviewUrl ?? "Not set"}</strong>
+              <span>{t("common.googleReviewUrl")}</span>
+              <strong>{client.googleReviewUrl ?? t("common.notSet")}</strong>
             </div>
           </section>
 
           <section className="events-section">
-            <h2>Devices</h2>
+            <h2>{t("common.devices")}</h2>
             {client.devices?.length ? (
               <div className="table-list">
                 {client.devices.map((device) => (
@@ -84,14 +86,14 @@ function ClientDetailContent() {
                       <strong>{device.publicCode}</strong>
                       <span>{device.alias || device.deviceType.name}</span>
                     </div>
-                    <span>{device.productionStatus}</span>
-                    <span>{device.operationalStatus}</span>
-                    <span>{device.lastScanAt ? new Date(device.lastScanAt).toLocaleDateString() : "No scans"}</span>
+                    <span>{translateStatus(t, device.productionStatus)}</span>
+                    <span>{translateStatus(t, device.operationalStatus)}</span>
+                    <span>{device.lastScanAt ? formatDate(locale, device.lastScanAt) : t("common.noScans")}</span>
                   </Link>
                 ))}
               </div>
             ) : (
-              <p>No devices assigned.</p>
+              <p>{t("admin.noDevicesAssigned")}</p>
             )}
           </section>
         </>

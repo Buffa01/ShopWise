@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { AdminAuthGate } from "../../../components/admin-auth-gate";
+import { useI18n } from "../../../lib/i18n";
 import { OverviewMetrics, getAdminOverviewMetrics } from "../../../lib/metrics";
 
 export default function AdminMetricsPage() {
@@ -14,6 +15,7 @@ export default function AdminMetricsPage() {
 }
 
 function AdminMetricsContent() {
+  const { t } = useI18n();
   const [metrics, setMetrics] = useState<OverviewMetrics | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -21,7 +23,7 @@ function AdminMetricsContent() {
     getAdminOverviewMetrics()
       .then(setMetrics)
       .catch((loadError) => {
-        setError(loadError instanceof Error ? loadError.message : "Could not load metrics");
+        setError(loadError instanceof Error ? loadError.message : t("metrics.loadError"));
       });
   }, []);
 
@@ -29,14 +31,14 @@ function AdminMetricsContent() {
     <main className="dashboard-shell">
       <div className="page-header">
         <div>
-          <p className="eyebrow">Admin</p>
-          <h1>Metrics</h1>
+          <p className="eyebrow">{t("common.admin")}</p>
+          <h1>{t("common.metrics")}</h1>
         </div>
-        <Link href="/admin">Back</Link>
+        <Link href="/admin">{t("common.back")}</Link>
       </div>
 
       {error ? <p className="form-error">{error}</p> : null}
-      {!metrics && !error ? <p>Loading...</p> : null}
+      {!metrics && !error ? <p>{t("common.loading")}</p> : null}
 
       {metrics ? (
         <>
@@ -51,16 +53,18 @@ function AdminMetricsContent() {
 }
 
 function MetricCards({ metrics }: { metrics: OverviewMetrics }) {
+  const { t } = useI18n();
+
   return (
     <section className="metric-grid">
-      <MetricCard label="Total devices" value={metrics.totalDevices} />
-      <MetricCard label="Active devices" value={metrics.activeDevices} />
-      <MetricCard label="Assigned" value={metrics.assignedDevices} />
-      <MetricCard label="Unassigned" value={metrics.unassignedDevices} />
-      <MetricCard label="Total scans" value={metrics.totalScans} />
-      <MetricCard label="QR scans" value={metrics.qrScans} />
-      <MetricCard label="NFC taps" value={metrics.nfcTaps} />
-      <MetricCard label="Redirects" value={metrics.redirects} />
+      <MetricCard label={t("metrics.totalDevices")} value={metrics.totalDevices} />
+      <MetricCard label={t("metrics.activeDevices")} value={metrics.activeDevices} />
+      <MetricCard label={t("metrics.assigned")} value={metrics.assignedDevices} />
+      <MetricCard label={t("metrics.unassigned")} value={metrics.unassignedDevices} />
+      <MetricCard label={t("metrics.totalScans")} value={metrics.totalScans} />
+      <MetricCard label={t("metrics.qrScans")} value={metrics.qrScans} />
+      <MetricCard label={t("metrics.nfcTaps")} value={metrics.nfcTaps} />
+      <MetricCard label={t("metrics.redirects")} value={metrics.redirects} />
     </section>
   );
 }
@@ -75,67 +79,72 @@ function MetricCard({ label, value }: { label: string; value: number }) {
 }
 
 function ScansByDay({ points }: { points: OverviewMetrics["scansByDay"] }) {
+  const { t } = useI18n();
   const visiblePoints = points.filter((point) => point.total > 0).slice(-14);
 
   return (
     <section className="events-section">
-      <h2>Scans by day</h2>
+      <h2>{t("metrics.scansByDay")}</h2>
       {visiblePoints.length ? (
         <div className="table-list">
           {visiblePoints.map((point) => (
             <div className="table-row metrics-row" key={point.date}>
               <strong>{point.date}</strong>
-              <span>Total {point.total}</span>
+              <span>{t("metrics.totalScans")} {point.total}</span>
               <span>QR {point.qr}</span>
               <span>NFC {point.nfc}</span>
             </div>
           ))}
         </div>
       ) : (
-        <p>No scans in the last 30 days.</p>
+        <p>{t("metrics.noScans30")}</p>
       )}
     </section>
   );
 }
 
 function TopDevices({ devices }: { devices: OverviewMetrics["topDevices"] }) {
+  const { t } = useI18n();
+
   return (
     <section className="events-section">
-      <h2>Top devices</h2>
+      <h2>{t("metrics.topDevices")}</h2>
       {devices.length ? (
         <div className="table-list">
           {devices.map((device) => (
             <Link className="table-row metrics-row" href={`/admin/devices/${device.deviceId}`} key={device.deviceId}>
               <div>
                 <strong>{device.alias || device.publicCode}</strong>
-                <span>{device.businessName ?? device.deviceTypeName ?? "No client"}</span>
+                <span>{device.businessName ?? device.deviceTypeName ?? t("common.noClient")}</span>
               </div>
-              <span>{device.scans} scans</span>
+              <span>{device.scans} {t("metrics.totalScans")}</span>
             </Link>
           ))}
         </div>
       ) : (
-        <p>No device scans yet.</p>
+        <p>{t("metrics.noDeviceScans")}</p>
       )}
     </section>
   );
 }
 
 function TopClients({ clients }: { clients: NonNullable<OverviewMetrics["topClients"]> }) {
+  const { t } = useI18n();
+
   return (
     <section className="events-section">
-      <h2>Top clients</h2>
+      <h2>{t("metrics.topClients")}</h2>
       {clients.length ? (
         <div className="table-list">
           {clients.map((client) => (
             <Link className="table-row metrics-row" href={`/admin/clients/${client.businessId}`} key={client.businessId}>
               <strong>{client.businessName}</strong>
-              <span>{client.scans} scans</span>
+              <span>{client.scans} {t("metrics.totalScans")}</span>
             </Link>
           ))}
         </div>
       ) : (
-        <p>No client scans yet.</p>
+        <p>{t("metrics.noClientScans")}</p>
       )}
     </section>
   );

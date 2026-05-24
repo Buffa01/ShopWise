@@ -2,6 +2,7 @@
 
 import { FormEvent, useMemo, useState } from "react";
 import type { DeviceType, DeviceTypeInput } from "../lib/device-types";
+import { useI18n } from "../lib/i18n";
 
 interface DeviceTypeFormProps {
   initialValue?: DeviceType;
@@ -10,6 +11,7 @@ interface DeviceTypeFormProps {
 }
 
 export function DeviceTypeForm({ initialValue, submitLabel, onSubmit }: DeviceTypeFormProps) {
+  const { t } = useI18n();
   const [name, setName] = useState(initialValue?.name ?? "");
   const [slug, setSlug] = useState(initialValue?.slug ?? "");
   const [description, setDescription] = useState(initialValue?.description ?? "");
@@ -42,7 +44,7 @@ export function DeviceTypeForm({ initialValue, submitLabel, onSubmit }: DeviceTy
         templateKey: templateKey || undefined
       });
     } catch (submitError) {
-      setError(submitError instanceof Error ? submitError.message : "Could not save device type");
+      setError(submitError instanceof Error ? submitError.message : t("admin.saveDeviceTypeError"));
     } finally {
       setIsSubmitting(false);
     }
@@ -51,7 +53,7 @@ export function DeviceTypeForm({ initialValue, submitLabel, onSubmit }: DeviceTy
   return (
     <form className="admin-form" onSubmit={handleSubmit}>
       <label>
-        Name
+        {t("common.name")}
         <input
           onBlur={fillSlug}
           onChange={(event) => setName(event.target.value)}
@@ -61,7 +63,7 @@ export function DeviceTypeForm({ initialValue, submitLabel, onSubmit }: DeviceTy
       </label>
 
       <label>
-        Slug
+        {t("admin.slug")}
         <input
           onChange={(event) => setSlug(event.target.value)}
           pattern="^[a-z0-9]+(-[a-z0-9]+)*$"
@@ -71,17 +73,17 @@ export function DeviceTypeForm({ initialValue, submitLabel, onSubmit }: DeviceTy
       </label>
 
       <label>
-        Description
+        {t("common.description")}
         <textarea onChange={(event) => setDescription(event.target.value)} rows={3} value={description} />
       </label>
 
       <label className="checkbox-row">
         <input checked={isActive} onChange={(event) => setIsActive(event.target.checked)} type="checkbox" />
-        Active
+        {t("common.active")}
       </label>
 
       <label>
-        Default prefix
+        {t("admin.defaultPrefix")}
         <input
           maxLength={12}
           onChange={(event) => setDefaultPrefix(event.target.value.toUpperCase())}
@@ -91,14 +93,14 @@ export function DeviceTypeForm({ initialValue, submitLabel, onSubmit }: DeviceTy
       </label>
 
       <label>
-        Template key
+        {t("admin.templateKey")}
         <input onChange={(event) => setTemplateKey(event.target.value)} value={templateKey} />
       </label>
 
       {error ? <p className="form-error">{error}</p> : null}
 
       <button disabled={isSubmitting} type="submit">
-        {isSubmitting ? "Saving..." : submitLabel}
+        {isSubmitting ? t("common.saving") : submitLabel}
       </button>
     </form>
   );
@@ -112,4 +114,3 @@ function slugify(value: string) {
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "");
 }
-

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { ClientAuthGate } from "../../../components/client-auth-gate";
 import { Device, listClientDevices } from "../../../lib/devices";
+import { formatDate, translateStatus, useI18n } from "../../../lib/i18n";
 
 export default function ClientDevicesPage() {
   return (
@@ -14,6 +15,7 @@ export default function ClientDevicesPage() {
 }
 
 function ClientDevicesContent() {
+  const { locale, t } = useI18n();
   const [devices, setDevices] = useState<Device[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -22,7 +24,7 @@ function ClientDevicesContent() {
     listClientDevices()
       .then(setDevices)
       .catch((loadError) => {
-        setError(loadError instanceof Error ? loadError.message : "Could not load devices");
+        setError(loadError instanceof Error ? loadError.message : t("client.loadDevicesError"));
       })
       .finally(() => setIsLoading(false));
   }, []);
@@ -31,21 +33,21 @@ function ClientDevicesContent() {
     <main className="dashboard-shell">
       <div className="page-header">
         <div>
-          <p className="eyebrow">Client</p>
-          <h1>My devices</h1>
+          <p className="eyebrow">{t("common.client")}</p>
+          <h1>{t("client.devicesTitle")}</h1>
         </div>
         <div className="admin-actions">
-          <Link href="/app">Back</Link>
+          <Link href="/app">{t("common.back")}</Link>
           <Link className="button-link" href="/app/devices/add">
-            Add device
+            {t("client.addDevice")}
           </Link>
         </div>
       </div>
 
-      {isLoading ? <p>Loading...</p> : null}
+      {isLoading ? <p>{t("common.loading")}</p> : null}
       {error ? <p className="form-error">{error}</p> : null}
 
-      {!isLoading && !devices.length ? <p>No devices claimed yet.</p> : null}
+      {!isLoading && !devices.length ? <p>{t("client.noDevices")}</p> : null}
 
       <div className="table-list">
         {devices.map((device) => (
@@ -54,9 +56,9 @@ function ClientDevicesContent() {
               <strong>{device.alias || device.publicCode}</strong>
               <span>{device.deviceType.name}</span>
             </div>
-            <span>{device.operationalStatus}</span>
-            <span>{device.targetUrl ? "Configured" : "No target"}</span>
-            <span>{device.lastScanAt ? new Date(device.lastScanAt).toLocaleDateString() : "No scans"}</span>
+            <span>{translateStatus(t, device.operationalStatus)}</span>
+            <span>{device.targetUrl ? t("common.configured") : t("common.noTarget")}</span>
+            <span>{device.lastScanAt ? formatDate(locale, device.lastScanAt) : t("common.noScans")}</span>
           </Link>
         ))}
       </div>

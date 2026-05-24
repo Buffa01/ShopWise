@@ -7,6 +7,7 @@ import { AdminAuthGate } from "../../../../components/admin-auth-gate";
 import { DeviceTypeForm } from "../../../../components/device-type-form";
 import { StickerTemplateEditor } from "../../../../components/sticker-template-editor";
 import { DeviceType, getDeviceType, updateDeviceType } from "../../../../lib/device-types";
+import { useI18n } from "../../../../lib/i18n";
 
 export default function EditDeviceTypePage() {
   return (
@@ -19,6 +20,7 @@ export default function EditDeviceTypePage() {
 function EditDeviceTypeContent() {
   const params = useParams<{ id: string }>();
   const router = useRouter();
+  const { t } = useI18n();
   const [deviceType, setDeviceType] = useState<DeviceType | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -26,7 +28,7 @@ function EditDeviceTypeContent() {
     getDeviceType(params.id)
       .then(setDeviceType)
       .catch((loadError) => {
-        setError(loadError instanceof Error ? loadError.message : "Could not load device type");
+        setError(loadError instanceof Error ? loadError.message : t("admin.loadDeviceTypeError"));
       });
   }, [params.id]);
 
@@ -34,14 +36,14 @@ function EditDeviceTypeContent() {
     <main className="dashboard-shell">
       <div className="page-header">
         <div>
-          <p className="eyebrow">Admin</p>
-          <h1>Edit device type</h1>
+          <p className="eyebrow">{t("common.admin")}</p>
+          <h1>{t("admin.editDeviceType")}</h1>
         </div>
-        <Link href="/admin/device-types">Back</Link>
+        <Link href="/admin/device-types">{t("common.back")}</Link>
       </div>
 
       {error ? <p className="form-error">{error}</p> : null}
-      {!deviceType && !error ? <p>Loading...</p> : null}
+      {!deviceType && !error ? <p>{t("common.loading")}</p> : null}
 
       {deviceType ? (
         <DeviceTypeForm
@@ -51,7 +53,7 @@ function EditDeviceTypeContent() {
             setDeviceType(updated);
             router.refresh();
           }}
-          submitLabel="Save changes"
+          submitLabel={t("admin.saveChanges")}
         />
       ) : null}
 

@@ -2,6 +2,7 @@
 
 import { FormEvent, useEffect, useState } from "react";
 import { DeviceType, listDeviceTypes } from "../lib/device-types";
+import { useI18n } from "../lib/i18n";
 
 interface DeviceCreateFormProps {
   mode: "single" | "batch";
@@ -10,6 +11,7 @@ interface DeviceCreateFormProps {
 }
 
 export function DeviceCreateForm({ mode, submitLabel, onSubmit }: DeviceCreateFormProps) {
+  const { t } = useI18n();
   const [deviceTypes, setDeviceTypes] = useState<DeviceType[]>([]);
   const [deviceTypeId, setDeviceTypeId] = useState("");
   const [prefix, setPrefix] = useState("");
@@ -26,9 +28,9 @@ export function DeviceCreateForm({ mode, submitLabel, onSubmit }: DeviceCreateFo
         setPrefix(activeTypes[0]?.defaultPrefix ?? "");
       })
       .catch((loadError) => {
-        setError(loadError instanceof Error ? loadError.message : "Could not load device types");
+        setError(loadError instanceof Error ? loadError.message : t("admin.loadDeviceTypesError"));
       });
-  }, []);
+  }, [t]);
 
   function handleDeviceTypeChange(nextId: string) {
     setDeviceTypeId(nextId);
@@ -48,7 +50,7 @@ export function DeviceCreateForm({ mode, submitLabel, onSubmit }: DeviceCreateFo
         quantity: mode === "batch" ? quantity : undefined
       });
     } catch (submitError) {
-      setError(submitError instanceof Error ? submitError.message : "Could not create device");
+      setError(submitError instanceof Error ? submitError.message : t("admin.createDeviceError"));
     } finally {
       setIsSubmitting(false);
     }
@@ -57,7 +59,7 @@ export function DeviceCreateForm({ mode, submitLabel, onSubmit }: DeviceCreateFo
   return (
     <form className="admin-form" onSubmit={handleSubmit}>
       <label>
-        Device type
+        {t("admin.deviceType")}
         <select
           onChange={(event) => handleDeviceTypeChange(event.target.value)}
           required
@@ -72,7 +74,7 @@ export function DeviceCreateForm({ mode, submitLabel, onSubmit }: DeviceCreateFo
       </label>
 
       <label>
-        Prefix
+        {t("common.prefix")}
         <input
           maxLength={12}
           onChange={(event) => setPrefix(event.target.value.toUpperCase())}
@@ -83,7 +85,7 @@ export function DeviceCreateForm({ mode, submitLabel, onSubmit }: DeviceCreateFo
 
       {mode === "batch" ? (
         <label>
-          Quantity
+          {t("common.quantity")}
           <input
             max={500}
             min={1}
@@ -98,9 +100,8 @@ export function DeviceCreateForm({ mode, submitLabel, onSubmit }: DeviceCreateFo
       {error ? <p className="form-error">{error}</p> : null}
 
       <button disabled={isSubmitting || !deviceTypeId} type="submit">
-        {isSubmitting ? "Creating..." : submitLabel}
+        {isSubmitting ? t("admin.creating") : submitLabel}
       </button>
     </form>
   );
 }
-

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { AdminAuthGate } from "../../../components/admin-auth-gate";
 import { ClientBusiness, listClients } from "../../../lib/clients";
+import { formatDate, useI18n } from "../../../lib/i18n";
 
 export default function ClientsPage() {
   return (
@@ -14,6 +15,7 @@ export default function ClientsPage() {
 }
 
 function ClientsContent() {
+  const { locale, t } = useI18n();
   const [clients, setClients] = useState<ClientBusiness[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -22,7 +24,7 @@ function ClientsContent() {
     listClients()
       .then(setClients)
       .catch((loadError) => {
-        setError(loadError instanceof Error ? loadError.message : "Could not load clients");
+        setError(loadError instanceof Error ? loadError.message : t("admin.loadClientsError"));
       })
       .finally(() => setIsLoading(false));
   }, []);
@@ -31,15 +33,15 @@ function ClientsContent() {
     <main className="dashboard-shell">
       <div className="page-header">
         <div>
-          <p className="eyebrow">Admin</p>
-          <h1>Clients</h1>
+          <p className="eyebrow">{t("common.admin")}</p>
+          <h1>{t("admin.clientsTitle")}</h1>
         </div>
         <Link className="button-link" href="/admin/clients/new">
-          New client
+          {t("admin.newClient")}
         </Link>
       </div>
 
-      {isLoading ? <p>Loading...</p> : null}
+      {isLoading ? <p>{t("common.loading")}</p> : null}
       {error ? <p className="form-error">{error}</p> : null}
 
       <div className="table-list">
@@ -49,9 +51,11 @@ function ClientsContent() {
               <strong>{client.businessName}</strong>
               <span>{client.owner.email}</span>
             </div>
-            <span>{client.owner.name ?? "No name"}</span>
-            <span>{client._count?.devices ?? 0} devices</span>
-            <span>{client.createdAt.slice(0, 10)}</span>
+            <span>{client.owner.name ?? t("common.noName")}</span>
+            <span>
+              {client._count?.devices ?? 0} {t("common.devices")}
+            </span>
+            <span>{formatDate(locale, client.createdAt)}</span>
           </Link>
         ))}
       </div>

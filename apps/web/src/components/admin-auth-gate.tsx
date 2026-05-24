@@ -2,10 +2,12 @@
 
 import { ReactNode, useEffect, useState } from "react";
 import { AuthUser, clearAccessToken, getAccessToken, getMe } from "../lib/auth";
+import { useI18n } from "../lib/i18n";
+import { LanguageSelector } from "./language-selector";
 
 export function AdminAuthGate({ children }: { children: (user: AuthUser) => ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
-  const [status, setStatus] = useState("Loading...");
+  const { t } = useI18n();
 
   useEffect(() => {
     const token = getAccessToken();
@@ -32,11 +34,20 @@ export function AdminAuthGate({ children }: { children: (user: AuthUser) => Reac
   if (!user) {
     return (
       <main className="dashboard-shell">
-        <p>{status}</p>
+        <div className="top-bar">
+          <LanguageSelector />
+        </div>
+        <p>{t("common.loading")}</p>
       </main>
     );
   }
 
-  return children(user);
+  return (
+    <>
+      <div className="top-bar dashboard-top-bar">
+        <LanguageSelector />
+      </div>
+      {children(user)}
+    </>
+  );
 }
-

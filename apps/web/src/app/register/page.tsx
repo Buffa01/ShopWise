@@ -3,10 +3,13 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FormEvent, useState } from "react";
+import { LanguageSelector } from "../../components/language-selector";
 import { getHomePathForRole, register, setAccessToken } from "../../lib/auth";
+import { useI18n } from "../../lib/i18n";
 
 export default function RegisterPage() {
   const router = useRouter();
+  const { t } = useI18n();
   const [name, setName] = useState("");
   const [businessName, setBusinessName] = useState("");
   const [email, setEmail] = useState("");
@@ -29,7 +32,7 @@ export default function RegisterPage() {
       setAccessToken(response.accessToken);
       router.push(getHomePathForRole(response.user.role));
     } catch (requestError) {
-      setError(requestError instanceof Error ? requestError.message : "Could not create account");
+      setError(requestError instanceof Error ? requestError.message : t("auth.registerError"));
     } finally {
       setIsSubmitting(false);
     }
@@ -37,12 +40,15 @@ export default function RegisterPage() {
 
   return (
     <main className="auth-shell">
+      <div className="top-bar">
+        <LanguageSelector />
+      </div>
       <section className="auth-panel">
         <p className="eyebrow">ShopWise</p>
-        <h1>Create account</h1>
+        <h1>{t("auth.registerTitle")}</h1>
         <form onSubmit={onSubmit} className="auth-form">
           <label>
-            Name
+            {t("common.name")}
             <input
               autoComplete="name"
               name="name"
@@ -52,7 +58,7 @@ export default function RegisterPage() {
             />
           </label>
           <label>
-            Business name
+            {t("auth.businessName")}
             <input
               autoComplete="organization"
               minLength={2}
@@ -64,7 +70,7 @@ export default function RegisterPage() {
             />
           </label>
           <label>
-            Email
+            {t("common.email")}
             <input
               autoComplete="email"
               name="email"
@@ -75,7 +81,7 @@ export default function RegisterPage() {
             />
           </label>
           <label>
-            Password
+            {t("common.password")}
             <input
               autoComplete="new-password"
               minLength={8}
@@ -88,14 +94,13 @@ export default function RegisterPage() {
           </label>
           {error ? <p className="form-error">{error}</p> : null}
           <button disabled={isSubmitting} type="submit">
-            {isSubmitting ? "Creating account..." : "Create account"}
+            {isSubmitting ? t("auth.creatingAccount") : t("auth.createAccount")}
           </button>
         </form>
         <p className="auth-alt">
-          Already have an account? <Link href="/login">Log in</Link>
+          {t("auth.alreadyHaveAccount")} <Link href="/login">{t("auth.loginAction")}</Link>
         </p>
       </section>
     </main>
   );
 }
-

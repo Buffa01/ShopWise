@@ -4,6 +4,7 @@ import Link from "next/link";
 import { FormEvent, useEffect, useState } from "react";
 import { AdminAuthGate } from "../../../components/admin-auth-gate";
 import { AssignmentStatus, Device, OperationalStatus, ProductionStatus, listDevices } from "../../../lib/devices";
+import { translateStatus, useI18n } from "../../../lib/i18n";
 
 export default function DevicesPage() {
   return (
@@ -14,6 +15,7 @@ export default function DevicesPage() {
 }
 
 function DevicesContent() {
+  const { t } = useI18n();
   const [devices, setDevices] = useState<Device[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -32,7 +34,7 @@ function DevicesContent() {
     })
       .then(setDevices)
       .catch((loadError) => {
-        setError(loadError instanceof Error ? loadError.message : "Could not load devices");
+        setError(loadError instanceof Error ? loadError.message : t("admin.loadDevicesError"));
       })
       .finally(() => setIsLoading(false));
   }
@@ -51,58 +53,58 @@ function DevicesContent() {
     <main className="dashboard-shell">
       <div className="page-header">
         <div>
-          <p className="eyebrow">Admin</p>
-          <h1>Devices</h1>
+          <p className="eyebrow">{t("common.admin")}</p>
+          <h1>{t("admin.devicesTitle")}</h1>
         </div>
         <div className="admin-actions">
           <Link className="button-link" href="/admin/devices/new">
-            New device
+            {t("admin.newDevice")}
           </Link>
           <Link className="button-link" href="/admin/devices/batch">
-            New batch
+            {t("admin.newBatch")}
           </Link>
         </div>
       </div>
 
-      {isLoading ? <p>Loading...</p> : null}
+      {isLoading ? <p>{t("common.loading")}</p> : null}
       {error ? <p className="form-error">{error}</p> : null}
 
       <form className="admin-form filter-form" onSubmit={onFilter}>
         <label>
-          Search
-          <input onChange={(event) => setQ(event.target.value)} placeholder="Code, alias, client, URL" value={q} />
+          {t("common.search")}
+          <input onChange={(event) => setQ(event.target.value)} placeholder={t("admin.searchPlaceholder")} value={q} />
         </label>
         <label>
-          Assignment
+          {t("admin.assignment")}
           <select onChange={(event) => setAssignmentStatus(event.target.value)} value={assignmentStatus}>
-            <option value="">All</option>
-            <option value="UNASSIGNED">Unassigned</option>
-            <option value="ASSIGNED">Assigned</option>
+            <option value="">{t("common.all")}</option>
+            <option value="UNASSIGNED">{t("status.UNASSIGNED")}</option>
+            <option value="ASSIGNED">{t("status.ASSIGNED")}</option>
           </select>
         </label>
         <label>
-          Operation
+          {t("admin.operation")}
           <select onChange={(event) => setOperationalStatus(event.target.value)} value={operationalStatus}>
-            <option value="">All</option>
-            <option value="INACTIVE">Inactive</option>
-            <option value="ACTIVE">Active</option>
-            <option value="PAUSED">Paused</option>
-            <option value="DISABLED">Disabled</option>
-            <option value="ARCHIVED">Archived</option>
+            <option value="">{t("common.all")}</option>
+            <option value="INACTIVE">{t("status.INACTIVE")}</option>
+            <option value="ACTIVE">{t("status.ACTIVE")}</option>
+            <option value="PAUSED">{t("status.PAUSED")}</option>
+            <option value="DISABLED">{t("status.DISABLED")}</option>
+            <option value="ARCHIVED">{t("status.ARCHIVED")}</option>
           </select>
         </label>
         <label>
-          Production
+          {t("admin.production")}
           <select onChange={(event) => setProductionStatus(event.target.value)} value={productionStatus}>
-            <option value="">All</option>
-            <option value="CREATED">Created</option>
-            <option value="ASSET_GENERATED">Asset generated</option>
-            <option value="DOWNLOADED">Downloaded</option>
-            <option value="PRINTED">Printed</option>
-            <option value="ERROR">Error</option>
+            <option value="">{t("common.all")}</option>
+            <option value="CREATED">{t("status.CREATED")}</option>
+            <option value="ASSET_GENERATED">{t("status.ASSET_GENERATED")}</option>
+            <option value="DOWNLOADED">{t("status.DOWNLOADED")}</option>
+            <option value="PRINTED">{t("status.PRINTED")}</option>
+            <option value="ERROR">{t("status.ERROR")}</option>
           </select>
         </label>
-        <button type="submit">Apply filters</button>
+        <button type="submit">{t("admin.applyFilters")}</button>
       </form>
 
       <div className="table-list">
@@ -112,9 +114,9 @@ function DevicesContent() {
               <strong>{device.publicCode}</strong>
               <span>{device.alias || device.deviceType.name}</span>
             </div>
-            <span>{device.assignmentStatus}</span>
-            <span>{device.operationalStatus}</span>
-            <span>{device.business?.businessName ?? "No client"}</span>
+            <span>{translateStatus(t, device.assignmentStatus)}</span>
+            <span>{translateStatus(t, device.operationalStatus)}</span>
+            <span>{device.business?.businessName ?? t("common.noClient")}</span>
           </Link>
         ))}
       </div>
