@@ -8,6 +8,7 @@ import { ConfigService } from "@nestjs/config";
 import { NestFactory } from "@nestjs/core";
 import { UserRole } from "@prisma/client";
 import { hash } from "bcryptjs";
+import { json, urlencoded } from "express";
 import type { INestApplication } from "@nestjs/common";
 import { ApiExceptionFilter } from "../src/common/filters/api-exception.filter";
 import { rateLimitMiddleware } from "../src/common/middleware/rate-limit.middleware";
@@ -62,12 +63,20 @@ async function main() {
     );
 
     const deviceType = await createDeviceType(baseUrl, admin.accessToken);
+    const designedDeviceType = await uploadDeviceTypeDesign(baseUrl, admin.accessToken, deviceType.id);
+    assert.ok(designedDeviceType.baseDesignKey);
     await expectStatus(
       request(baseUrl, "/admin/device-types", {
         headers: authHeaders(client.accessToken)
       }),
       403
     );
+    const designFile = await request<ArrayBuffer>(baseUrl, `/admin/device-types/${deviceType.id}/design`, {
+      headers: authHeaders(admin.accessToken),
+      parse: "arrayBuffer"
+    });
+    assert.equal(designFile.status, 200);
+    assert.equal(designFile.headers.get("content-type"), "image/png");
 
     const device = await createDevice(baseUrl, admin.accessToken, deviceType.id);
     const publicCode = String(device.publicCode);
@@ -82,6 +91,13 @@ async function main() {
     assert.equal(batch.quantity, 2);
     assert.equal(batch.devices.length, 2);
     assert.ok(batch.devices.every((item: JsonRecord) => String(item.publicCode).startsWith(TEST_PREFIX)));
+    const batchSheet = await request<ArrayBuffer>(baseUrl, `/admin/devices/batches/${batch.id}/assets/sheet`, {
+      headers: authHeaders(admin.accessToken),
+      parse: "arrayBuffer"
+    });
+    assert.equal(batchSheet.status, 200);
+    assert.equal(batchSheet.headers.get("content-type"), "application/pdf");
+    assert.equal(batchSheet.headers.get("x-shopwise-sheet-width-mm"), "1300");
 
     const claimedDevice = await claimDevice(baseUrl, client.accessToken, publicCode);
     assert.equal(claimedDevice.id, device.id);
@@ -169,7 +185,7 @@ async function main() {
 }
 
 async function createApp() {
-  const app = await NestFactory.create(AppModule, { logger: false });
+  const app = await NestFactory.create(AppModule, { bodyParser: false, logger: false });
   const httpServer = app.getHttpAdapter().getInstance() as {
     disable?: (setting: string) => void;
     set?: (setting: string, value: unknown) => void;
@@ -177,6 +193,8 @@ async function createApp() {
 
   httpServer.disable?.("x-powered-by");
   httpServer.set?.("trust proxy", true);
+  app.use(json({ limit: "15mb" }));
+  app.use(urlencoded({ extended: true, limit: "15mb" }));
   app.setGlobalPrefix("v1", {
     exclude: ["r/:code", "n/:code"]
   });
@@ -328,9 +346,33 @@ async function createDeviceType(baseUrl: string, accessToken: string) {
       templateKey: "sticker/integration",
       qrPosition: {
         unit: "mm",
-        x: 50,
-        y: 50
+        sticker: {
+          shape: "circle",
+          widthMm: 100,
+          heightMm: 100,
+          diameterMm: 100
+        },
+        qr: {
+          xMm: 34,
+          yMm: 34,
+          widthMm: 32,
+          heightMm: 32
+        }
       }
+    }
+  });
+  assert.equal(response.status, 201);
+  return response.body;
+}
+
+async function uploadDeviceTypeDesign(baseUrl: string, accessToken: string, deviceTypeId: unknown) {
+  const response = await request<JsonRecord>(baseUrl, `/admin/device-types/${deviceTypeId}/design`, {
+    method: "POST",
+    headers: authHeaders(accessToken),
+    body: {
+      contentType: "image/png",
+      fileName: "integration-sticker.png",
+      dataUrl: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/p9sAAAAASUVORK5CYII="
     }
   });
   assert.equal(response.status, 201);

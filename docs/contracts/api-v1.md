@@ -131,6 +131,51 @@ Admin-only. Updates one device type.
 
 Use `isActive = false` to disable a type. Device types are not deleted in v1 because existing devices may depend on them.
 
+Sticker template fields are stored in `qrPosition`:
+
+```json
+{
+  "unit": "mm",
+  "sticker": {
+    "shape": "circle",
+    "widthMm": 100,
+    "heightMm": 100,
+    "diameterMm": 100
+  },
+  "qr": {
+    "xMm": 34,
+    "yMm": 34,
+    "widthMm": 32,
+    "heightMm": 32
+  }
+}
+```
+
+### `POST /v1/admin/device-types/:id/design`
+
+Admin-only. Uploads the base sticker design for a device type. The design is used as the PDF background when generating device assets.
+
+Request:
+
+```json
+{
+  "contentType": "image/png",
+  "fileName": "google-review-sticker.png",
+  "dataUrl": "data:image/png;base64,..."
+}
+```
+
+Rules:
+
+- Supports `image/png` and `image/jpeg`.
+- Stores the design in asset storage and updates `baseDesignKey`.
+- Request body limit is 15 MB.
+- The QR position is saved separately through `PATCH /v1/admin/device-types/:id`.
+
+### `GET /v1/admin/device-types/:id/design`
+
+Admin-only. Returns the uploaded sticker design image for editor preview.
+
 ### `POST /v1/admin/devices`
 
 Creates one device.
@@ -168,6 +213,30 @@ Response:
   "quantity": 100,
   "status": "COMPLETED"
 }
+```
+
+### `GET /v1/admin/devices/batches/:batchId/assets/sheet`
+
+Admin-only. Generates a print sheet PDF for a device batch from the latest individual sticker PDFs.
+
+Current print sheet rules:
+
+```text
+Sheet width: 1300 mm
+Sticker size: 100 mm x 100 mm
+Gap between stickers: 20 mm
+Columns: 11
+Height: dynamic by row count
+```
+
+Response:
+
+```text
+Content-Type: application/pdf
+X-ShopWise-Sheet-Columns: 11
+X-ShopWise-Sheet-Rows: n
+X-ShopWise-Sheet-Width-Mm: 1300
+X-ShopWise-Sheet-Height-Mm: n
 ```
 
 ### `GET /v1/admin/devices`

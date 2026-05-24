@@ -109,7 +109,7 @@ Tasks:
 
 - Add sticker template package.
 - Generate QR image assets. Done.
-- Render sticker PNG/PDF. PDF done, PNG pending if needed.
+- Render sticker PNG/PDF. PDF from uploaded base design done, PNG pending if needed.
 - Upload assets to storage. Local storage done, R2 pending for production.
 - Add admin download action. Done.
 - Track asset download event.
@@ -117,7 +117,7 @@ Tasks:
 Acceptance criteria:
 
 - Every new device can produce a QR image.
-- Every new device can produce a print asset.
+- Every new device can produce a print asset from the device type base design. Done.
 - Admin can download latest print asset.
 - Failed generation is visible through production status.
 

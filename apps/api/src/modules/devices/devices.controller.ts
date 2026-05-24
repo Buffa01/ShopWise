@@ -56,6 +56,28 @@ export class DevicesController {
     return response.send(result.file);
   }
 
+  @Get("batches/:batchId/assets/sheet")
+  async downloadBatchPrintSheet(@Param("batchId") batchId: string, @Res() response: Response) {
+    const result = await this.devicesService.getBatchPrintSheetFile(batchId);
+
+    if (!result) {
+      throw new NotFoundException({
+        error: {
+          code: "BATCH_PRINT_SHEET_NOT_FOUND",
+          message: "Batch print sheet not found"
+        }
+      });
+    }
+
+    response.setHeader("Content-Type", "application/pdf");
+    response.setHeader("Content-Disposition", `attachment; filename=\"batch-${result.batch.id}-sheet.pdf\"`);
+    response.setHeader("X-ShopWise-Sheet-Columns", String(result.columns));
+    response.setHeader("X-ShopWise-Sheet-Rows", String(result.rows));
+    response.setHeader("X-ShopWise-Sheet-Width-Mm", String(result.widthMm));
+    response.setHeader("X-ShopWise-Sheet-Height-Mm", String(Math.round(result.heightMm * 10) / 10));
+    return response.send(result.file);
+  }
+
   @Post()
   createOne(@Body() dto: CreateDeviceDto) {
     return this.devicesService.createOne(dto);

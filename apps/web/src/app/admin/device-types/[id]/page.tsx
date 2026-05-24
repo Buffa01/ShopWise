@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { AdminAuthGate } from "../../../../components/admin-auth-gate";
 import { DeviceTypeForm } from "../../../../components/device-type-form";
+import { StickerTemplateEditor } from "../../../../components/sticker-template-editor";
 import { DeviceType, getDeviceType, updateDeviceType } from "../../../../lib/device-types";
 
 export default function EditDeviceTypePage() {
@@ -53,7 +54,8 @@ function EditDeviceTypeContent() {
           submitLabel="Save changes"
         />
       ) : null}
+
+      {deviceType ? <StickerTemplateEditor deviceType={deviceType} onChange={setDeviceType} /> : null}
     </main>
   );
 }
-

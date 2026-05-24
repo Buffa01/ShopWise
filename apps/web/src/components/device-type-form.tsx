@@ -16,10 +16,6 @@ export function DeviceTypeForm({ initialValue, submitLabel, onSubmit }: DeviceTy
   const [isActive, setIsActive] = useState(initialValue?.isActive ?? true);
   const [defaultPrefix, setDefaultPrefix] = useState(initialValue?.defaultPrefix ?? "");
   const [templateKey, setTemplateKey] = useState(initialValue?.templateKey ?? "");
-  const [baseDesignKey, setBaseDesignKey] = useState(initialValue?.baseDesignKey ?? "");
-  const [qrPositionText, setQrPositionText] = useState(
-    initialValue?.qrPosition ? JSON.stringify(initialValue.qrPosition, null, 2) : ""
-  );
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -43,9 +39,7 @@ export function DeviceTypeForm({ initialValue, submitLabel, onSubmit }: DeviceTy
         description: description || undefined,
         isActive,
         defaultPrefix: defaultPrefix || undefined,
-        templateKey: templateKey || undefined,
-        baseDesignKey: baseDesignKey || undefined,
-        qrPosition: parseQrPosition(qrPositionText)
+        templateKey: templateKey || undefined
       });
     } catch (submitError) {
       setError(submitError instanceof Error ? submitError.message : "Could not save device type");
@@ -101,21 +95,6 @@ export function DeviceTypeForm({ initialValue, submitLabel, onSubmit }: DeviceTy
         <input onChange={(event) => setTemplateKey(event.target.value)} value={templateKey} />
       </label>
 
-      <label>
-        Base design key
-        <input onChange={(event) => setBaseDesignKey(event.target.value)} value={baseDesignKey} />
-      </label>
-
-      <label>
-        QR position JSON
-        <textarea
-          onChange={(event) => setQrPositionText(event.target.value)}
-          placeholder='{"unit":"mm","x":0,"y":0,"size":35}'
-          rows={6}
-          value={qrPositionText}
-        />
-      </label>
-
       {error ? <p className="form-error">{error}</p> : null}
 
       <button disabled={isSubmitting} type="submit">
@@ -132,19 +111,5 @@ function slugify(value: string) {
     .replace(/[\u0300-\u036f]/g, "")
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "");
-}
-
-function parseQrPosition(value: string) {
-  if (!value.trim()) {
-    return undefined;
-  }
-
-  const parsed = JSON.parse(value) as unknown;
-
-  if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
-    throw new Error("QR position must be a JSON object");
-  }
-
-  return parsed as Record<string, unknown>;
 }
 

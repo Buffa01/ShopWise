@@ -308,3 +308,23 @@ Acceptance criteria:
 - Fly release command applies Prisma migrations. Done.
 - Web deploy points to `apps/web` and uses `NEXT_PUBLIC_API_BASE_URL`. Done.
 - Temporary filesystem storage limitation is documented. Done.
+
+### SWS-080 Sticker Template Editor
+
+Scope:
+
+- Upload a PNG/JPG base design for each device type.
+- Configure a 100 mm circular sticker template.
+- Set QR width and height in millimeters.
+- Drag the QR placement box visually over the design.
+- Generate device PDFs from the uploaded design and saved QR placement.
+- Generate batch print sheet PDFs with 1300 mm width and 20 mm spacing.
+
+Acceptance criteria:
+
+- Admin can upload and preview the base design. Done.
+- Admin can move a red QR placement box with the mouse. Done.
+- QR placement is saved in millimeters. Done.
+- New device assets use the uploaded base design when present. Done.
+- Existing fallback PDF still works when no base design is configured. Done.
+- Admin can download a batch print sheet PDF after batch creation. Done.

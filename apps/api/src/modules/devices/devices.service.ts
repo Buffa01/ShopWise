@@ -165,6 +165,10 @@ export class DevicesService {
     return this.assets.getLatestPrintAssetFile(deviceId);
   }
 
+  getBatchPrintSheetFile(batchId: string) {
+    return this.assets.generateBatchPrintSheet(batchId);
+  }
+
   async updateAdminDevice(id: string, dto: UpdateAdminDeviceDto, actorUserId: string) {
     const device = await this.get(id);
     const data: Prisma.DeviceUpdateInput = {};

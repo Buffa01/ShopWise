@@ -1,13 +1,18 @@
 import { Inject, Injectable, NotFoundException } from "@nestjs/common";
 import { Prisma } from "@prisma/client";
-import { conflict } from "../../common/errors/http-errors";
+import { badRequest, conflict } from "../../common/errors/http-errors";
 import { PrismaService } from "../../prisma/prisma.service";
+import { StorageService } from "../assets/storage.service";
 import type { CreateDeviceTypeDto } from "./dto/create-device-type.dto";
 import type { UpdateDeviceTypeDto } from "./dto/update-device-type.dto";
+import type { UploadDeviceTypeDesignDto } from "./dto/upload-device-type-design.dto";
 
 @Injectable()
 export class DeviceTypesService {
-  constructor(@Inject(PrismaService) private readonly prisma: PrismaService) {}
+  constructor(
+    @Inject(PrismaService) private readonly prisma: PrismaService,
+    @Inject(StorageService) private readonly storage: StorageService
+  ) {}
 
   list() {
     return this.prisma.deviceType.findMany({
@@ -71,6 +76,38 @@ export class DeviceTypesService {
     }
   }
 
+  async uploadDesign(id: string, dto: UploadDeviceTypeDesignDto) {
+    await this.get(id);
+
+    const buffer = this.parseDataUrl(dto);
+    const extension = dto.contentType === "image/png" ? "png" : "jpg";
+    const key = `device-types/${id}/base-design.${extension}`;
+
+    await this.storage.write(key, buffer);
+
+    return this.prisma.deviceType.update({
+      where: { id },
+      data: {
+        baseDesignKey: key
+      }
+    });
+  }
+
+  async getDesignFile(id: string) {
+    const deviceType = await this.get(id);
+
+    if (!deviceType.baseDesignKey) {
+      return null;
+    }
+
+    const contentType = deviceType.baseDesignKey.endsWith(".png") ? "image/png" : "image/jpeg";
+
+    return {
+      contentType,
+      file: await this.storage.read(deviceType.baseDesignKey)
+    };
+  }
+
   private toCreateData(dto: CreateDeviceTypeDto): Prisma.DeviceTypeCreateInput {
     return {
       name: dto.name.trim(),
@@ -103,5 +140,15 @@ export class DeviceTypesService {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
       throw conflict("DEVICE_TYPE_SLUG_EXISTS", "A device type with this slug already exists");
     }
+  }
+
+  private parseDataUrl(dto: UploadDeviceTypeDesignDto) {
+    const expectedPrefix = `data:${dto.contentType};base64,`;
+
+    if (!dto.dataUrl.startsWith(expectedPrefix)) {
+      throw badRequest("VALIDATION_ERROR", "Invalid design image data URL");
+    }
+
+    return Buffer.from(dto.dataUrl.slice(expectedPrefix.length), "base64");
   }
 }
