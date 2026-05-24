@@ -60,6 +60,9 @@ Phase 1: Executable foundation.
 - Implemented client metrics overview endpoint and dashboard.
 - Implemented admin/client per-device metrics endpoints and summary cards.
 - Added 30-day daily scan buckets, QR/NFC split, redirects, top devices, and top clients.
+- Added in-memory rate limiting for public redirect and auth endpoints.
+- Added structured JSON request, exception, and rate limit logs.
+- Added basic API security headers and proxy-aware client IP handling.
 
 ## Confirmed Decisions
 
@@ -108,7 +111,7 @@ The file is a design reference only for now. The implementation should later sto
 ## Next Recommended Work
 
 1. Add admin audit log viewer.
-2. Add rate limiting and structured logging.
+2. Add integration tests for critical flows.
 3. Replace basic sticker template with Figma-based artwork.
 
 ## Local Verification
@@ -140,4 +143,5 @@ Assets: QR PNG, sticker PDF, PrintAsset record, and authenticated PDF download p
 Client devices: claim, owned list/detail, alias/target/status configuration pass
 Admin support: client list/create/detail, device edit, assign, unassign, audit/event recording pass
 Metrics: admin overview, client overview, per-device metrics, QR/NFC split, top devices, top clients pass
+Security 10A: redirect/auth rate limits, structured logs, security headers pass
 ```

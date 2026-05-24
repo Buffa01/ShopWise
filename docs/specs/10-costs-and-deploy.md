@@ -91,3 +91,17 @@ Use local filesystem storage in development behind the same storage interface.
 - Avoid logging full request bodies or sensitive metadata.
 - Add caching for public static assets.
 
+## Security and Rate Limit Environment
+
+Initial production controls:
+
+```text
+RATE_LIMIT_REDIRECT_WINDOW_MS=60000
+RATE_LIMIT_REDIRECT_MAX=120
+RATE_LIMIT_AUTH_WINDOW_MS=60000
+RATE_LIMIT_AUTH_MAX=20
+```
+
+The v1 limiter is in-memory and protects one API instance. Move the same policy to Redis or provider edge rate limiting before running multiple API instances.
+
+Logs are structured JSON written to stdout/stderr so Fly.io or a future log drain can ingest them without app changes. Request bodies and sensitive values must not be logged.
