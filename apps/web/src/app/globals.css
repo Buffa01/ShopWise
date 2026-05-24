@@ -20,6 +20,7 @@ body {
 
 .top-bar {
   display: flex;
+  gap: 12px;
   justify-content: flex-end;
   padding: 16px 24px 0;
 }
@@ -42,6 +43,10 @@ body {
   border-radius: 8px;
   color: var(--foreground);
   font: inherit;
+  padding: 8px 10px;
+}
+
+.top-bar-action {
   padding: 8px 10px;
 }
 

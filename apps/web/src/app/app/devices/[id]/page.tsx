@@ -110,14 +110,6 @@ function ClientDeviceDetailContent() {
               <span>{t("common.lastScan")}</span>
               <strong>{device.lastScanAt ? formatDateTime(locale, device.lastScanAt) : t("common.noScans")}</strong>
             </div>
-            <div>
-              <span>{t("common.qrUrl")}</span>
-              <strong>{device.qrUrl}</strong>
-            </div>
-            <div>
-              <span>{t("common.nfcUrl")}</span>
-              <strong>{device.nfcUrl}</strong>
-            </div>
           </section>
 
           <form className="admin-form config-form" onSubmit={onSubmit}>
