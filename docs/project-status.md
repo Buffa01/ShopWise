@@ -110,8 +110,8 @@ The file is a design reference only for now. The implementation should later sto
 
 ## Next Recommended Work
 
-1. Add admin audit log viewer.
-2. Add integration tests for critical flows.
+1. Add integration tests for critical flows.
+2. Add deploy configuration.
 3. Replace basic sticker template with Figma-based artwork.
 
 ## Local Verification
@@ -144,4 +144,5 @@ Client devices: claim, owned list/detail, alias/target/status configuration pass
 Admin support: client list/create/detail, device edit, assign, unassign, audit/event recording pass
 Metrics: admin overview, client overview, per-device metrics, QR/NFC split, top devices, top clients pass
 Security 10A: redirect/auth rate limits, structured logs, security headers pass
+Admin audit logs: admin list/filter screen, device/client shortcuts, and admin-only API pass
 ```

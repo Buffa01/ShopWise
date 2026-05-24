@@ -238,6 +238,57 @@ GET /v1/admin/devices/:deviceId/assets/latest
 
 Returns the latest sticker PDF as `application/pdf`.
 
+## Admin Audit Logs
+
+### `GET /v1/admin/audit-logs`
+
+Admin-only. Lists the latest audit records for support and operational review.
+
+Query parameters:
+
+```text
+action
+actorUserId
+businessId
+deviceId
+```
+
+Rules:
+
+- Returns the latest 100 matching logs, ordered by newest first.
+- Includes actor identity (`id`, `name`, `email`, `role`) when the action has an actor.
+- Supports filtering by action text, actor, business, and device.
+- Exposes `before` and `after` JSON snapshots for traceability.
+- Must not expose password hashes, tokens, secrets, or sensitive request metadata.
+
+Example response:
+
+```json
+[
+  {
+    "id": "uuid",
+    "actorUserId": "uuid",
+    "targetUserId": null,
+    "businessId": "uuid",
+    "deviceId": "uuid",
+    "action": "ADMIN_DEVICE_UPDATE",
+    "before": {
+      "alias": "Mostrador"
+    },
+    "after": {
+      "alias": "Caja"
+    },
+    "createdAt": "2026-05-24T10:00:00.000Z",
+    "actor": {
+      "id": "uuid",
+      "name": "ShopWise Admin",
+      "email": "admin@shopwise.uy",
+      "role": "ADMIN"
+    }
+  }
+]
+```
+
 ## Admin Clients
 
 ### `GET /v1/admin/clients`

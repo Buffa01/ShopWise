@@ -159,7 +159,7 @@ Acceptance criteria:
 
 Tasks:
 
-- Add audit log coverage.
+- Add audit log coverage. Done for admin device support actions and viewer.
 - Add rate limiting. Done for redirect and auth endpoints.
 - Add structured logging. Done for requests, exceptions, and rate limit denials.
 - Add integration tests for critical flows.
@@ -173,6 +173,7 @@ Acceptance criteria:
 - Redirect endpoint is rate limited. Done.
 - Production env variables are documented. Done for rate limit controls.
 - Physical QR/NFC samples pass real-world testing.
+- Admin can list and filter audit logs. Done.
 
 ## First Programming Tasks
 

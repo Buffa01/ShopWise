@@ -24,6 +24,9 @@ export default function AdminPage() {
             <Link className="button-link" href="/admin/metrics">
               Metrics
             </Link>
+            <Link className="button-link" href="/admin/audit-logs">
+              Audit logs
+            </Link>
           </div>
         </main>
       )}

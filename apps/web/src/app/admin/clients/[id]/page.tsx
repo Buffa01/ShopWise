@@ -34,7 +34,12 @@ function ClientDetailContent() {
           <p className="eyebrow">Admin</p>
           <h1>{client?.businessName ?? "Client detail"}</h1>
         </div>
-        <Link href="/admin/clients">Back</Link>
+        <div className="admin-actions">
+          <Link href="/admin/clients">Back</Link>
+          <Link className="button-secondary" href={`/admin/audit-logs?businessId=${params.id}`}>
+            Audit logs
+          </Link>
+        </div>
       </div>
 
       {error ? <p className="form-error">{error}</p> : null}
