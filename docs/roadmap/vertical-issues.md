@@ -254,11 +254,13 @@ Scope:
 - Record admin support changes.
 - Record target URL and status changes.
 - Store before/after JSON.
+- Provide admin audit log list and filters by action, actor, business, and device. Done.
 
 Acceptance criteria:
 
 - Important changes are traceable to an actor.
 - Audit logs do not expose password hashes or secrets.
+- Admin can open audit logs from the dashboard, device detail, and client detail. Done.
 
 ### SWS-071 Rate Limiting and Logging
 

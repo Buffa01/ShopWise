@@ -288,6 +288,10 @@ a {
   grid-template-columns: 2fr repeat(3, 1fr);
 }
 
+.audit-row {
+  grid-template-columns: 1.4fr 1.2fr 1.2fr 2fr;
+}
+
 .detail-grid strong {
   overflow-wrap: anywhere;
 }

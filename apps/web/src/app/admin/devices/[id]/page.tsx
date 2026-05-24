@@ -127,7 +127,12 @@ function DeviceDetailContent() {
           <p className="eyebrow">Admin</p>
           <h1>{device?.publicCode ?? "Device detail"}</h1>
         </div>
-        <Link href="/admin/devices">Back</Link>
+        <div className="admin-actions">
+          <Link href="/admin/devices">Back</Link>
+          <Link className="button-secondary" href={`/admin/audit-logs?deviceId=${params.id}`}>
+            Audit logs
+          </Link>
+        </div>
       </div>
 
       {error ? <p className="form-error">{error}</p> : null}
