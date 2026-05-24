@@ -162,14 +162,14 @@ Tasks:
 - Add audit log coverage. Done for admin device support actions and viewer.
 - Add rate limiting. Done for redirect and auth endpoints.
 - Add structured logging. Done for requests, exceptions, and rate limit denials.
-- Add integration tests for critical flows.
+- Add integration tests for critical flows. Done for API HTTP flows.
 - Add deploy configuration.
 - Add monitoring.
 - Run real print/scan QA.
 
 Acceptance criteria:
 
-- Critical flows have automated tests.
+- Critical flows have automated tests. Done for API HTTP flows.
 - Redirect endpoint is rate limited. Done.
 - Production env variables are documented. Done for rate limit controls.
 - Physical QR/NFC samples pass real-world testing.

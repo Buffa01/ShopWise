@@ -110,9 +110,9 @@ The file is a design reference only for now. The implementation should later sto
 
 ## Next Recommended Work
 
-1. Add integration tests for critical flows.
-2. Add deploy configuration.
-3. Replace basic sticker template with Figma-based artwork.
+1. Add deploy configuration.
+2. Replace basic sticker template with Figma-based artwork.
+3. Run end-to-end browser QA for admin and client screens.
 
 ## Local Verification
 
@@ -145,4 +145,5 @@ Admin support: client list/create/detail, device edit, assign, unassign, audit/e
 Metrics: admin overview, client overview, per-device metrics, QR/NFC split, top devices, top clients pass
 Security 10A: redirect/auth rate limits, structured logs, security headers pass
 Admin audit logs: admin list/filter screen, device/client shortcuts, and admin-only API pass
+Integration tests 11A: auth/roles, device types, device creation, batch creation, claim, client config, QR/NFC redirect, metrics, audit logs, and asset download pass
 ```
