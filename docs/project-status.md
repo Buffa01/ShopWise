@@ -104,15 +104,14 @@ The file is a design reference only for now. The implementation should later sto
 
 ## Pending Product Decisions
 
-- Define exact QR placement inside the 10 cm sticker.
 - Define whether the PDF needs bleed/cut marks.
 - Decide whether analytics raw event retention starts at 12 months.
 
 ## Next Recommended Work
 
-1. Replace basic sticker template with Figma-based artwork.
-2. Run end-to-end browser QA for admin and client screens.
-3. Replace temporary Fly volume asset storage with Cloudflare R2.
+1. Run end-to-end browser QA for admin and client screens.
+2. Replace temporary Fly volume asset storage with Cloudflare R2.
+3. Add stored print sheet records if on-demand generation becomes too slow.
 
 ## Local Verification
 
@@ -147,4 +146,5 @@ Security 10A: redirect/auth rate limits, structured logs, security headers pass
 Admin audit logs: admin list/filter screen, device/client shortcuts, and admin-only API pass
 Integration tests 11A: auth/roles, device types, device creation, batch creation, claim, client config, QR/NFC redirect, metrics, audit logs, and asset download pass
 Deploy config 11B: Dockerfile, Fly API config, Prisma deploy migration command, Vercel/Fly deploy docs, and production env checklist added
+Sticker template 12A: device type base design upload, QR drag placement editor, mm-based QR dimensions, PDF generation from uploaded design, and 1300 mm batch print sheet generation pass
 ```

@@ -61,7 +61,36 @@ QR PNG: storage/devices/{publicCode}/qr.png
 PDF:    storage/devices/{publicCode}/sticker.pdf
 ```
 
-The first generated PDF is a basic 10 cm circular template with the QR inserted. The final Figma-based artwork can replace the template in a later iteration without changing the device or asset model.
+The device type can store a base PNG/JPG sticker design plus QR placement in millimeters. If a base design exists, the PDF generator uses it as the full sticker background and inserts the device QR at the saved QR rectangle. If no base design exists, the system falls back to the basic 10 cm circular template.
+
+QR placement format:
+
+```json
+{
+  "unit": "mm",
+  "sticker": {
+    "shape": "circle",
+    "widthMm": 100,
+    "heightMm": 100,
+    "diameterMm": 100
+  },
+  "qr": {
+    "xMm": 34,
+    "yMm": 34,
+    "widthMm": 32,
+    "heightMm": 32
+  }
+}
+```
+
+Admin template editor behavior:
+
+1. Upload the base sticker design as PNG/JPG.
+2. Set sticker diameter in mm.
+3. Set QR width and height in mm.
+4. Drag the red QR box over the image.
+5. Save the generated coordinates.
+6. New devices generated from that type use the saved design and QR placement.
 
 Reference file:
 
@@ -83,9 +112,10 @@ The Figma design remains the source of visual truth. For v1, convert/export the 
 
 If the design is mostly static, prefer:
 
-1. Export high-resolution static base artwork from Figma without QR.
-2. Place QR in a fixed slot in the HTML template.
-3. Render final PNG/PDF.
+1. Export high-resolution static base artwork from Figma without QR as PNG/JPG.
+2. Upload it to the device type.
+3. Place QR with the admin visual editor.
+4. Render final PDF.
 
 ## Print Quality Requirements
 
@@ -104,8 +134,19 @@ For batch creation:
 2. Generate QR images.
 3. Generate printable assets.
 4. Store generated files.
-5. Mark failed devices with `productionStatus = ERROR`.
-6. Mark batch as `PARTIAL_ERROR` if some assets fail.
+5. Allow admin to download a batch print sheet PDF.
+6. Mark failed devices with `productionStatus = ERROR`.
+7. Mark batch as `PARTIAL_ERROR` if some assets fail.
+
+Batch print sheet:
+
+```text
+Sheet width: 1300 mm
+Sticker size: 100 mm
+Gap between stickers: 20 mm
+Columns: 11
+Height: dynamic
+```
 
 ## Future Enhancements
 
@@ -113,5 +154,6 @@ For batch creation:
 - Dynamic CTA text.
 - Client branding.
 - Multiple sticker sizes.
+- Stored batch print sheet assets instead of on-demand generation.
 - Direct print vendor export packages.
 - Regeneration history and approvals.
