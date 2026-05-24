@@ -31,6 +31,11 @@ export function AdminAuthGate({ children }: { children: (user: AuthUser) => Reac
       });
   }, []);
 
+  function logout() {
+    clearAccessToken();
+    window.location.href = "/login";
+  }
+
   if (!user) {
     return (
       <main className="dashboard-shell">
@@ -46,6 +51,9 @@ export function AdminAuthGate({ children }: { children: (user: AuthUser) => Reac
     <>
       <div className="top-bar dashboard-top-bar">
         <LanguageSelector />
+        <button className="button-secondary top-bar-action" onClick={logout} type="button">
+          {t("auth.logout")}
+        </button>
       </div>
       {children(user)}
     </>

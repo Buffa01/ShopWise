@@ -321,8 +321,8 @@ export class DevicesService {
     return this.get(device.id);
   }
 
-  listClientDevices(userId: string) {
-    return this.prisma.device.findMany({
+  async listClientDevices(userId: string) {
+    const devices = await this.prisma.device.findMany({
       where: {
         business: {
           ownerUserId: userId
@@ -333,6 +333,8 @@ export class DevicesService {
         createdAt: "desc"
       }
     });
+
+    return devices.map((device) => this.toClientDevice(device));
   }
 
   async getClientDevice(id: string, userId: string) {
@@ -356,7 +358,7 @@ export class DevicesService {
       throw forbidden("DEVICE_FORBIDDEN", "Device not found or not owned by this client");
     }
 
-    return device;
+    return this.toClientDevice(device);
   }
 
   async claim(dto: ClaimDeviceDto, userId: string) {
@@ -496,6 +498,23 @@ export class DevicesService {
       publicCode,
       ...links
     };
+  }
+
+  private toClientDevice<T extends object>(device: T) {
+    const sanitized = { ...device } as Record<string, unknown>;
+    delete sanitized.qrPath;
+    delete sanitized.nfcPath;
+    delete sanitized.qrUrl;
+    delete sanitized.nfcUrl;
+    delete sanitized.qrImageKey;
+    delete sanitized.latestPrintAssetId;
+    delete sanitized.printAssets;
+    delete sanitized.batch;
+
+    return sanitized as Omit<
+      T,
+      "qrPath" | "nfcPath" | "qrUrl" | "nfcUrl" | "qrImageKey" | "latestPrintAssetId" | "printAssets" | "batch"
+    >;
   }
 
   private recordAdminDeviceChange(
