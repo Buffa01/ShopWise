@@ -1,10 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
+import { ThemeToggle } from "../components/theme-toggle";
+import { Locale, useI18n } from "../lib/i18n";
+import { useTheme } from "../lib/theme";
 
-type PublicLocale = "es" | "en";
-type PublicTheme = "light" | "dark";
 type PublicCopy = {
   nav: {
     home: string;
@@ -13,9 +14,6 @@ type PublicCopy = {
     whatsapp: string;
     menu: string;
     language: string;
-    theme: string;
-    themeLight: string;
-    themeDark: string;
     whatsappLong: string;
   };
   hero: {
@@ -67,9 +65,6 @@ const copy = {
       whatsapp: "WhatsApp",
       menu: "Abrir menú",
       language: "Idioma",
-      theme: "Tema",
-      themeLight: "Claro",
-      themeDark: "Oscuro",
       whatsappLong: "Contactar por WhatsApp"
     },
     hero: {
@@ -150,9 +145,6 @@ const copy = {
       whatsapp: "WhatsApp",
       menu: "Open menu",
       language: "Language",
-      theme: "Theme",
-      themeLight: "Light",
-      themeDark: "Dark",
       whatsappLong: "Contact on WhatsApp"
     },
     hero: {
@@ -225,18 +217,17 @@ const copy = {
     },
     footer: "We connect the physical world with the digital one."
   }
-} satisfies Record<PublicLocale, PublicCopy>;
+} satisfies Record<Locale, PublicCopy>;
 
-const locales: Array<{ label: string; value: PublicLocale }> = [
+const locales: Array<{ label: string; value: Locale }> = [
   { label: "ES", value: "es" },
   { label: "EN", value: "en" }
 ];
 
 export default function HomePage() {
-  const [locale, setLocale] = useState<PublicLocale>("es");
-  const [theme, setTheme] = useState<PublicTheme>("light");
+  const { locale, setLocale } = useI18n();
+  const { theme } = useTheme();
   const t = useMemo(() => copy[locale], [locale]);
-  const nextTheme = theme === "light" ? "dark" : "light";
 
   return (
     <main className={`public-site ${theme === "dark" ? "is-dark" : "is-light"}`}>
@@ -265,16 +256,7 @@ export default function HomePage() {
           ))}
         </div>
 
-        <button
-          aria-label={t.nav.theme}
-          aria-pressed={theme === "dark"}
-          className="public-theme-toggle"
-          onClick={() => setTheme(nextTheme)}
-          type="button"
-        >
-          <span>{theme === "light" ? "☀" : "☾"}</span>
-          <strong>{theme === "light" ? t.nav.themeDark : t.nav.themeLight}</strong>
-        </button>
+        <ThemeToggle />
 
         <a className="nav-whatsapp" href={whatsappUrl} rel="noreferrer" target="_blank">
           {t.nav.whatsapp}

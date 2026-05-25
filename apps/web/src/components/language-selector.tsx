@@ -6,12 +6,28 @@ export function LanguageSelector() {
   const { locale, setLocale, t } = useI18n();
 
   return (
-    <label className="language-selector">
+    <div aria-label={t("common.language")} className="language-selector">
       <span>{t("common.language")}</span>
-      <select onChange={(event) => setLocale(event.target.value as "es" | "en")} value={locale}>
-        <option value="es">{t("common.spanish")}</option>
-        <option value="en">{t("common.english")}</option>
-      </select>
-    </label>
+      <div className="language-options">
+        <button
+          aria-label={t("common.spanish")}
+          aria-pressed={locale === "es"}
+          className={locale === "es" ? "is-active" : undefined}
+          onClick={() => setLocale("es")}
+          type="button"
+        >
+          ES
+        </button>
+        <button
+          aria-label={t("common.english")}
+          aria-pressed={locale === "en"}
+          className={locale === "en" ? "is-active" : undefined}
+          onClick={() => setLocale("en")}
+          type="button"
+        >
+          EN
+        </button>
+      </div>
+    </div>
   );
 }
