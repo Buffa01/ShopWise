@@ -47,21 +47,33 @@ function ClientDevicesContent() {
       {isLoading ? <p>{t("common.loading")}</p> : null}
       {error ? <p className="form-error">{error}</p> : null}
 
-      {!isLoading && !devices.length ? <p>{t("client.noDevices")}</p> : null}
-
-      <div className="table-list">
-        {devices.map((device) => (
-          <Link className="table-row devices-row" href={`/app/devices/${device.id}`} key={device.id}>
-            <div>
-              <strong>{device.alias || device.publicCode}</strong>
-              <span>{device.deviceType.name}</span>
-            </div>
-            <span>{translateStatus(t, device.operationalStatus)}</span>
-            <span>{device.targetUrl ? t("common.configured") : t("common.noTarget")}</span>
-            <span>{device.lastScanAt ? formatDate(locale, device.lastScanAt) : t("common.noScans")}</span>
+      {!isLoading && !devices.length ? (
+        <section className="empty-state">
+          <div className="empty-state-icon">⌁</div>
+          <p className="eyebrow">{t("client.noDevicesEyebrow")}</p>
+          <h2>{t("client.noDevicesTitle")}</h2>
+          <p>{t("client.noDevicesDescription")}</p>
+          <Link className="button-link" href="/app/devices/add">
+            {t("client.addDevice")}
           </Link>
-        ))}
-      </div>
+        </section>
+      ) : null}
+
+      {devices.length ? (
+        <div className="table-list">
+          {devices.map((device) => (
+            <Link className="table-row devices-row" href={`/app/devices/${device.id}`} key={device.id}>
+              <div>
+                <strong>{device.alias || device.publicCode}</strong>
+                <span>{device.deviceType.name}</span>
+              </div>
+              <span>{translateStatus(t, device.operationalStatus)}</span>
+              <span>{device.targetUrl ? t("common.configured") : t("common.noTarget")}</span>
+              <span>{device.lastScanAt ? formatDate(locale, device.lastScanAt) : t("common.noScans")}</span>
+            </Link>
+          ))}
+        </div>
+      ) : null}
     </main>
   );
 }

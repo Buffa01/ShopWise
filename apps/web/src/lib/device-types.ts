@@ -1,4 +1,4 @@
-import { apiRequest } from "./api";
+import { API_BASE_URL, apiRequest } from "./api";
 import { getAccessToken } from "./auth";
 
 export interface DeviceType {
@@ -104,7 +104,7 @@ export async function getDeviceTypeDesignUrl(id: string) {
     throw new Error("Missing access token");
   }
 
-  const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:3001/v1"}/admin/device-types/${id}/design`, {
+  const response = await fetch(`${API_BASE_URL}/admin/device-types/${id}/design`, {
     headers: {
       Authorization: `Bearer ${token}`
     }
