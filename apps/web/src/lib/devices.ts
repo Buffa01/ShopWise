@@ -1,4 +1,4 @@
-import { apiRequest } from "./api";
+import { API_BASE_URL, apiRequest } from "./api";
 import type { DeviceType } from "./device-types";
 import { getAccessToken } from "./auth";
 
@@ -119,11 +119,11 @@ export function getDevice(id: string) {
 }
 
 export function getLatestPrintAssetUrl(id: string) {
-  return `${process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:3001/v1"}/admin/devices/${id}/assets/latest`;
+  return `${API_BASE_URL}/admin/devices/${id}/assets/latest`;
 }
 
 export function getBatchPrintSheetUrl(batchId: string) {
-  return `${process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:3001/v1"}/admin/devices/batches/${batchId}/assets/sheet`;
+  return `${API_BASE_URL}/admin/devices/batches/${batchId}/assets/sheet`;
 }
 
 export function createDevice(input: { deviceTypeId: string; prefix?: string }) {
