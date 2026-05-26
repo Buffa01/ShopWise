@@ -3,7 +3,6 @@
 import { ReactNode, useEffect, useState } from "react";
 import { AuthUser, clearAccessToken, getAccessToken, getMe } from "../lib/auth";
 import { useI18n } from "../lib/i18n";
-import { LanguageSelector } from "./language-selector";
 
 export function ClientAuthGate({ children }: { children: (user: AuthUser) => ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
@@ -31,31 +30,18 @@ export function ClientAuthGate({ children }: { children: (user: AuthUser) => Rea
       });
   }, []);
 
-  function logout() {
-    clearAccessToken();
-    window.location.href = "/login";
-  }
-
   if (!user) {
     return (
-      <main className="dashboard-shell">
-        <div className="top-bar">
-          <LanguageSelector />
+      <main className="client-loading">
+        <div className="client-loading-mark">
+          <span>shop</span>
+          <strong>w</strong>
+          <span>ise</span>
         </div>
         <p>{t("common.loading")}</p>
       </main>
     );
   }
 
-  return (
-    <>
-      <div className="top-bar dashboard-top-bar">
-        <LanguageSelector />
-        <button className="button-secondary top-bar-action" onClick={logout} type="button">
-          {t("auth.logout")}
-        </button>
-      </div>
-      {children(user)}
-    </>
-  );
+  return <>{children(user)}</>;
 }

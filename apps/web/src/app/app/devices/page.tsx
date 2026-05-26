@@ -3,18 +3,20 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { ClientAuthGate } from "../../../components/client-auth-gate";
+import { ClientDashboardShell } from "../../../components/client-dashboard-shell";
+import { AuthUser } from "../../../lib/auth";
 import { Device, listClientDevices } from "../../../lib/devices";
 import { formatDate, translateStatus, useI18n } from "../../../lib/i18n";
 
 export default function ClientDevicesPage() {
   return (
     <ClientAuthGate>
-      {() => <ClientDevicesContent />}
+      {(user) => <ClientDevicesContent user={user} />}
     </ClientAuthGate>
   );
 }
 
-function ClientDevicesContent() {
+function ClientDevicesContent({ user }: { user: AuthUser }) {
   const { locale, t } = useI18n();
   const [devices, setDevices] = useState<Device[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -30,50 +32,58 @@ function ClientDevicesContent() {
   }, []);
 
   return (
-    <main className="dashboard-shell">
-      <div className="page-header">
-        <div>
-          <p className="eyebrow">{t("common.client")}</p>
-          <h1>{t("client.devicesTitle")}</h1>
-        </div>
-        <div className="admin-actions">
-          <Link href="/app">{t("common.back")}</Link>
-          <Link className="button-link" href="/app/devices/add">
-            {t("client.addDevice")}
-          </Link>
-        </div>
-      </div>
-
-      {isLoading ? <p>{t("common.loading")}</p> : null}
+    <ClientDashboardShell
+      actions={
+        <Link className="client-primary-action" href="/app/devices/add">
+          {t("client.addDevice")}
+        </Link>
+      }
+      description={t("client.devicesDescription")}
+      eyebrow={t("common.devices")}
+      title={t("client.devicesTitle")}
+      user={user}
+    >
+      {isLoading ? <p className="client-muted">{t("common.loading")}</p> : null}
       {error ? <p className="form-error">{error}</p> : null}
 
       {!isLoading && !devices.length ? (
-        <section className="empty-state">
-          <div className="empty-state-icon">⌁</div>
-          <p className="eyebrow">{t("client.noDevicesEyebrow")}</p>
+        <section className="client-empty-state">
+          <div className="client-empty-icon">+</div>
+          <p className="client-eyebrow">{t("client.noDevicesEyebrow")}</p>
           <h2>{t("client.noDevicesTitle")}</h2>
           <p>{t("client.noDevicesDescription")}</p>
-          <Link className="button-link" href="/app/devices/add">
+          <Link className="client-primary-action" href="/app/devices/add">
             {t("client.addDevice")}
           </Link>
         </section>
       ) : null}
 
       {devices.length ? (
-        <div className="table-list">
+        <div className="client-device-grid">
           {devices.map((device) => (
-            <Link className="table-row devices-row" href={`/app/devices/${device.id}`} key={device.id}>
+            <Link className="client-device-card" href={`/app/devices/${device.id}`} key={device.id}>
               <div>
                 <strong>{device.alias || device.publicCode}</strong>
                 <span>{device.deviceType.name}</span>
               </div>
-              <span>{translateStatus(t, device.operationalStatus)}</span>
-              <span>{device.targetUrl ? t("common.configured") : t("common.noTarget")}</span>
-              <span>{device.lastScanAt ? formatDate(locale, device.lastScanAt) : t("common.noScans")}</span>
+              <dl>
+                <div>
+                  <dt>{t("common.status")}</dt>
+                  <dd>{translateStatus(t, device.operationalStatus)}</dd>
+                </div>
+                <div>
+                  <dt>{t("common.targetUrl")}</dt>
+                  <dd>{device.targetUrl ? t("common.configured") : t("common.noTarget")}</dd>
+                </div>
+                <div>
+                  <dt>{t("common.lastScan")}</dt>
+                  <dd>{device.lastScanAt ? formatDate(locale, device.lastScanAt) : t("common.noScans")}</dd>
+                </div>
+              </dl>
             </Link>
           ))}
         </div>
       ) : null}
-    </main>
+    </ClientDashboardShell>
   );
 }

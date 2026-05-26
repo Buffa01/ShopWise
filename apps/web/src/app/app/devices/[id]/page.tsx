@@ -4,6 +4,8 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { FormEvent, useEffect, useState } from "react";
 import { ClientAuthGate } from "../../../../components/client-auth-gate";
+import { ClientDashboardShell } from "../../../../components/client-dashboard-shell";
+import { AuthUser } from "../../../../lib/auth";
 import { Device, getClientDevice, updateClientDevice } from "../../../../lib/devices";
 import { formatDateTime, translateStatus, useI18n } from "../../../../lib/i18n";
 import { DeviceMetrics, getClientDeviceMetrics } from "../../../../lib/metrics";
@@ -13,12 +15,12 @@ type EditableOperationalStatus = "INACTIVE" | "ACTIVE" | "PAUSED";
 export default function ClientDeviceDetailPage() {
   return (
     <ClientAuthGate>
-      {() => <ClientDeviceDetailContent />}
+      {(user) => <ClientDeviceDetailContent user={user} />}
     </ClientAuthGate>
   );
 }
 
-function ClientDeviceDetailContent() {
+function ClientDeviceDetailContent({ user }: { user: AuthUser }) {
   const params = useParams<{ id: string }>();
   const { locale, t } = useI18n();
   const [device, setDevice] = useState<Device | null>(null);
@@ -69,18 +71,20 @@ function ClientDeviceDetailContent() {
   }
 
   return (
-    <main className="dashboard-shell">
-      <div className="page-header">
-        <div>
-          <p className="eyebrow">{t("common.client")}</p>
-          <h1>{device?.alias || device?.publicCode || t("client.deviceDetail")}</h1>
-        </div>
-        <Link href="/app/devices">{t("common.back")}</Link>
-      </div>
-
+    <ClientDashboardShell
+      actions={
+        <Link className="client-secondary-action" href="/app/devices">
+          {t("common.back")}
+        </Link>
+      }
+      description={t("client.deviceDetailDescription")}
+      eyebrow={t("client.deviceDetail")}
+      title={device?.alias || device?.publicCode || t("client.deviceDetail")}
+      user={user}
+    >
       {error ? <p className="form-error">{error}</p> : null}
       {message ? <p className="form-success">{message}</p> : null}
-      {!device && !error ? <p>{t("common.loading")}</p> : null}
+      {!device && !error ? <p className="client-muted">{t("common.loading")}</p> : null}
 
       {device ? (
         <>
@@ -172,7 +176,7 @@ function ClientDeviceDetailContent() {
           </section>
         </>
       ) : null}
-    </main>
+    </ClientDashboardShell>
   );
 }
 

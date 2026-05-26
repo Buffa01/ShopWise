@@ -5,6 +5,8 @@ import { FormEvent, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { BrowserQRCodeReader, IScannerControls } from "@zxing/browser";
 import { ClientAuthGate } from "../../../../components/client-auth-gate";
+import { ClientDashboardShell } from "../../../../components/client-dashboard-shell";
+import { AuthUser } from "../../../../lib/auth";
 import { claimClientDevice } from "../../../../lib/devices";
 import { useI18n } from "../../../../lib/i18n";
 
@@ -13,12 +15,12 @@ type ScannerStatus = "idle" | "starting" | "scanning" | "unsupported" | "error";
 export default function AddDevicePage() {
   return (
     <ClientAuthGate>
-      {() => <AddDeviceContent />}
+      {(user) => <AddDeviceContent user={user} />}
     </ClientAuthGate>
   );
 }
 
-function AddDeviceContent() {
+function AddDeviceContent({ user }: { user: AuthUser }) {
   const router = useRouter();
   const { t } = useI18n();
   const videoRef = useRef<HTMLVideoElement | null>(null);
@@ -112,18 +114,20 @@ function AddDeviceContent() {
   const isScanning = scannerStatus === "starting" || scannerStatus === "scanning";
 
   return (
-    <main className="dashboard-shell">
-      <div className="page-header">
-        <div>
-          <p className="eyebrow">{t("common.client")}</p>
-          <h1>{t("client.addDeviceTitle")}</h1>
-        </div>
-        <Link href="/app/devices">{t("common.back")}</Link>
-      </div>
-
+    <ClientDashboardShell
+      actions={
+        <Link className="client-secondary-action" href="/app/devices">
+          {t("common.back")}
+        </Link>
+      }
+      description={t("client.addDeviceDescription")}
+      eyebrow={t("client.scanDeviceEyebrow")}
+      title={t("client.addDeviceTitle")}
+      user={user}
+    >
       <section className="scanner-panel">
         <div>
-          <p className="eyebrow">{t("client.scanDeviceEyebrow")}</p>
+          <p className="client-eyebrow">{t("client.scanDeviceEyebrow")}</p>
           <h2>{t("client.scanDeviceTitle")}</h2>
           <p>{t("client.scanDeviceDescription")}</p>
         </div>
@@ -137,11 +141,11 @@ function AddDeviceContent() {
 
         <div className="scanner-actions">
           {!isScanning ? (
-            <button className="button-link" disabled={isSubmitting} onClick={startScanner} type="button">
+            <button className="client-primary-action" disabled={isSubmitting} onClick={startScanner} type="button">
               {t("client.scanQr")}
             </button>
           ) : (
-            <button className="button-secondary" onClick={stopScanner} type="button">
+            <button className="client-secondary-action" onClick={stopScanner} type="button">
               {t("common.cancel")}
             </button>
           )}
@@ -166,7 +170,7 @@ function AddDeviceContent() {
           {isSubmitting ? t("client.claimingDevice") : t("client.claimDevice")}
         </button>
       </form>
-    </main>
+    </ClientDashboardShell>
   );
 }
 
