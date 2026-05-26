@@ -95,8 +95,14 @@ export interface ProductionDeviceItem {
   latestAsset: {
     id: string;
     pdfKey: string | null;
+    pdfBytes: string | null;
     pngKey: string | null;
+    pngBytes: string | null;
     svgKey: string | null;
+    svgBytes: string | null;
+    qrImageKey: string | null;
+    qrImageBytes: string | null;
+    totalBytes: string;
     createdAt: string;
   } | null;
   createdAt: string;

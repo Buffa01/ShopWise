@@ -210,8 +210,20 @@ export class DevicesService {
       this.assets.getStorageUsage()
     ]);
 
-    const singleItems = singleDevices.map((device) => this.toProductionDeviceItem(device));
-    const batchItems = batches.map((batch) => this.toProductionBatchItem(batch));
+    const storageObjects = await this.prisma.storageObject.findMany({
+      where: {
+        key: {
+          in: this.collectProductionAssetKeys(singleDevices, batches)
+        }
+      },
+      select: {
+        byteSize: true,
+        key: true
+      }
+    });
+    const storageByKey = new Map(storageObjects.map((object) => [object.key, object.byteSize]));
+    const singleItems = singleDevices.map((device) => this.toProductionDeviceItem(device, storageByKey));
+    const batchItems = batches.map((batch) => this.toProductionBatchItem(batch, storageByKey));
     const allDeviceItems = [
       ...singleItems,
       ...batchItems.flatMap((batch) => batch.devices)
@@ -718,6 +730,49 @@ export class DevicesService {
     return this.listProduction();
   }
 
+  private collectProductionAssetKeys(
+    singleDevices: Array<
+      Prisma.DeviceGetPayload<{
+        include: typeof DEVICE_INCLUDE & {
+          printAssets: {
+            orderBy: { createdAt: "desc" };
+            take: 1;
+          };
+        };
+      }>
+    >,
+    batches: Array<
+      Prisma.DeviceBatchGetPayload<{
+        include: {
+          devices: {
+            orderBy: { publicCode: "asc" };
+            include: typeof DEVICE_INCLUDE & {
+              printAssets: {
+                orderBy: { createdAt: "desc" };
+                take: 1;
+              };
+            };
+          };
+        };
+      }>
+    >
+  ) {
+    const keys = new Set<string>();
+    const addDeviceKeys = (device: (typeof singleDevices)[number]) => {
+      const latestAsset = device.printAssets[0] ?? null;
+
+      if (device.qrImageKey) keys.add(device.qrImageKey);
+      if (latestAsset?.pdfKey) keys.add(latestAsset.pdfKey);
+      if (latestAsset?.pngKey) keys.add(latestAsset.pngKey);
+      if (latestAsset?.svgKey) keys.add(latestAsset.svgKey);
+    };
+
+    singleDevices.forEach(addDeviceKeys);
+    batches.forEach((batch) => batch.devices.forEach(addDeviceKeys));
+
+    return Array.from(keys);
+  }
+
   private toProductionDeviceItem(
     device: Prisma.DeviceGetPayload<{
       include: typeof DEVICE_INCLUDE & {
@@ -726,9 +781,17 @@ export class DevicesService {
           take: 1;
         };
       };
-    }>
+    }>,
+    storageByKey: Map<string, bigint>
   ) {
     const latestAsset = device.printAssets[0] ?? null;
+    const assetBytes = [
+      latestAsset?.pdfKey ? storageByKey.get(latestAsset.pdfKey) ?? 0n : 0n,
+      latestAsset?.pngKey ? storageByKey.get(latestAsset.pngKey) ?? 0n : 0n,
+      latestAsset?.svgKey ? storageByKey.get(latestAsset.svgKey) ?? 0n : 0n,
+      device.qrImageKey ? storageByKey.get(device.qrImageKey) ?? 0n : 0n
+    ];
+    const totalBytes = assetBytes.reduce((sum, value) => sum + value, 0n);
 
     return {
       id: device.id,
@@ -745,8 +808,14 @@ export class DevicesService {
         ? {
             id: latestAsset.id,
             pdfKey: latestAsset.pdfKey,
+            pdfBytes: latestAsset.pdfKey ? (storageByKey.get(latestAsset.pdfKey) ?? 0n).toString() : null,
             pngKey: latestAsset.pngKey,
+            pngBytes: latestAsset.pngKey ? (storageByKey.get(latestAsset.pngKey) ?? 0n).toString() : null,
             svgKey: latestAsset.svgKey,
+            svgBytes: latestAsset.svgKey ? (storageByKey.get(latestAsset.svgKey) ?? 0n).toString() : null,
+            qrImageKey: device.qrImageKey,
+            qrImageBytes: device.qrImageKey ? (storageByKey.get(device.qrImageKey) ?? 0n).toString() : null,
+            totalBytes: totalBytes.toString(),
             createdAt: latestAsset.createdAt
           }
         : null,
@@ -768,9 +837,10 @@ export class DevicesService {
           };
         };
       };
-    }>
+    }>,
+    storageByKey: Map<string, bigint>
   ) {
-    const devices = batch.devices.map((device) => this.toProductionDeviceItem(device));
+    const devices = batch.devices.map((device) => this.toProductionDeviceItem(device, storageByKey));
     const generated = devices.filter((device) => device.hasAsset).length;
     const downloaded = devices.filter((device) => device.productionStatus === ProductionStatus.DOWNLOADED).length;
     const printed = devices.filter((device) => device.productionStatus === ProductionStatus.PRINTED).length;
