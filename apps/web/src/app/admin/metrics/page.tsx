@@ -28,14 +28,14 @@ function AdminMetricsContent() {
   }, []);
 
   return (
-    <main className="dashboard-shell">
-      <div className="page-header">
+    <main className="dashboard-shell admin-metrics-page">
+      <section className="admin-metrics-hero">
         <div>
           <p className="eyebrow">{t("common.admin")}</p>
           <h1>{t("common.metrics")}</h1>
         </div>
-        <Link href="/admin">{t("common.back")}</Link>
-      </div>
+        <Link className="admin-secondary-action" href="/admin">{t("common.back")}</Link>
+      </section>
 
       {error ? <p className="form-error">{error}</p> : null}
       {!metrics && !error ? <p>{t("common.loading")}</p> : null}
@@ -43,9 +43,11 @@ function AdminMetricsContent() {
       {metrics ? (
         <>
           <MetricCards metrics={metrics} />
-          <ScansByDay points={metrics.scansByDay} />
-          <TopDevices devices={metrics.topDevices} />
-          <TopClients clients={metrics.topClients ?? []} />
+          <section className="admin-metrics-grid">
+            <ScansByDay points={metrics.scansByDay} />
+            <TopDevices devices={metrics.topDevices} />
+            <TopClients clients={metrics.topClients ?? []} />
+          </section>
         </>
       ) : null}
     </main>
@@ -56,7 +58,7 @@ function MetricCards({ metrics }: { metrics: OverviewMetrics }) {
   const { t } = useI18n();
 
   return (
-    <section className="metric-grid">
+    <section className="admin-metrics-summary">
       <MetricCard label={t("metrics.totalDevices")} value={metrics.totalDevices} />
       <MetricCard label={t("metrics.activeDevices")} value={metrics.activeDevices} />
       <MetricCard label={t("metrics.assigned")} value={metrics.assignedDevices} />
@@ -71,7 +73,7 @@ function MetricCards({ metrics }: { metrics: OverviewMetrics }) {
 
 function MetricCard({ label, value }: { label: string; value: number }) {
   return (
-    <div className="metric-card">
+    <div className="admin-metrics-card">
       <span>{label}</span>
       <strong>{value}</strong>
     </div>
@@ -83,12 +85,15 @@ function ScansByDay({ points }: { points: OverviewMetrics["scansByDay"] }) {
   const visiblePoints = points.filter((point) => point.total > 0).slice(-14);
 
   return (
-    <section className="events-section">
-      <h2>{t("metrics.scansByDay")}</h2>
+    <section className="admin-metrics-panel admin-metrics-panel-wide">
+      <div className="admin-metrics-panel-heading">
+        <span>{t("metrics.scansByDay")}</span>
+        <strong>{visiblePoints.length}</strong>
+      </div>
       {visiblePoints.length ? (
-        <div className="table-list">
+        <div className="admin-metrics-list">
           {visiblePoints.map((point) => (
-            <div className="table-row metrics-row" key={point.date}>
+            <div className="admin-metrics-row admin-metrics-day-row" key={point.date}>
               <strong>{point.date}</strong>
               <span>{t("metrics.totalScans")} {point.total}</span>
               <span>QR {point.qr}</span>
@@ -107,12 +112,15 @@ function TopDevices({ devices }: { devices: OverviewMetrics["topDevices"] }) {
   const { t } = useI18n();
 
   return (
-    <section className="events-section">
-      <h2>{t("metrics.topDevices")}</h2>
+    <section className="admin-metrics-panel">
+      <div className="admin-metrics-panel-heading">
+        <span>{t("metrics.topDevices")}</span>
+        <strong>{devices.length}</strong>
+      </div>
       {devices.length ? (
-        <div className="table-list">
+        <div className="admin-metrics-list">
           {devices.map((device) => (
-            <Link className="table-row metrics-row" href={`/admin/devices/${device.deviceId}`} key={device.deviceId}>
+            <Link className="admin-metrics-row admin-metrics-link-row" href={`/admin/devices/${device.deviceId}`} key={device.deviceId}>
               <div>
                 <strong>{device.alias || device.publicCode}</strong>
                 <span>{device.businessName ?? device.deviceTypeName ?? t("common.noClient")}</span>
@@ -132,12 +140,15 @@ function TopClients({ clients }: { clients: NonNullable<OverviewMetrics["topClie
   const { t } = useI18n();
 
   return (
-    <section className="events-section">
-      <h2>{t("metrics.topClients")}</h2>
+    <section className="admin-metrics-panel">
+      <div className="admin-metrics-panel-heading">
+        <span>{t("metrics.topClients")}</span>
+        <strong>{clients.length}</strong>
+      </div>
       {clients.length ? (
-        <div className="table-list">
+        <div className="admin-metrics-list">
           {clients.map((client) => (
-            <Link className="table-row metrics-row" href={`/admin/clients/${client.businessId}`} key={client.businessId}>
+            <Link className="admin-metrics-row admin-metrics-link-row" href={`/admin/clients/${client.businessId}`} key={client.businessId}>
               <strong>{client.businessName}</strong>
               <span>{client.scans} {t("metrics.totalScans")}</span>
             </Link>
