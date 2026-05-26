@@ -3,18 +3,20 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { ClientAuthGate } from "../../../components/client-auth-gate";
+import { ClientDashboardShell } from "../../../components/client-dashboard-shell";
+import { AuthUser } from "../../../lib/auth";
 import { formatDateTime, useI18n } from "../../../lib/i18n";
 import { OverviewMetrics, getClientOverviewMetrics } from "../../../lib/metrics";
 
 export default function ClientMetricsPage() {
   return (
     <ClientAuthGate>
-      {() => <ClientMetricsContent />}
+      {(user) => <ClientMetricsContent user={user} />}
     </ClientAuthGate>
   );
 }
 
-function ClientMetricsContent() {
+function ClientMetricsContent({ user }: { user: AuthUser }) {
   const { locale, t } = useI18n();
   const [metrics, setMetrics] = useState<OverviewMetrics | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -28,17 +30,19 @@ function ClientMetricsContent() {
   }, []);
 
   return (
-    <main className="dashboard-shell">
-      <div className="page-header">
-        <div>
-          <p className="eyebrow">{t("common.client")}</p>
-          <h1>{t("common.metrics")}</h1>
-        </div>
-        <Link href="/app">{t("common.back")}</Link>
-      </div>
-
+    <ClientDashboardShell
+      actions={
+        <Link className="client-secondary-action" href="/app">
+          {t("common.back")}
+        </Link>
+      }
+      description={t("client.metricsDescription")}
+      eyebrow={t("common.metrics")}
+      title={t("client.metricsTitle")}
+      user={user}
+    >
       {error ? <p className="form-error">{error}</p> : null}
-      {!metrics && !error ? <p>{t("common.loading")}</p> : null}
+      {!metrics && !error ? <p className="client-muted">{t("common.loading")}</p> : null}
 
       {metrics ? (
         <>
@@ -112,7 +116,7 @@ function ClientMetricsContent() {
           </section>
         </>
       ) : null}
-    </main>
+    </ClientDashboardShell>
   );
 }
 
