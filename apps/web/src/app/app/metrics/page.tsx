@@ -71,7 +71,7 @@ function ClientMetricsDashboard({ metrics }: { metrics: OverviewMetrics }) {
         </div>
       </section>
 
-      <section className="metric-grid client-metric-kpis">
+      <section className="client-metrics-summary">
         <MetricCard label={t("metrics.myDevices")} value={metrics.totalDevices} />
         <MetricCard label={t("metrics.activeDevices")} value={metrics.activeDevices} />
         <MetricCard label={t("metrics.qrScans")} value={metrics.qrScans} />
@@ -165,7 +165,7 @@ function ClientMetricsDashboard({ metrics }: { metrics: OverviewMetrics }) {
 
 function MetricCard({ label, value }: { label: string; value: number }) {
   return (
-    <div className="metric-card">
+    <div className="client-metrics-card">
       <span>{label}</span>
       <strong>{value}</strong>
     </div>

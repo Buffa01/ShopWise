@@ -3517,6 +3517,8 @@ a {
 }
 
 .client-content {
+  display: grid;
+  gap: 18px;
   margin: 0 auto;
   max-width: 1180px;
   padding: clamp(28px, 5vw, 56px) clamp(18px, 4vw, 48px) 64px;
@@ -3524,10 +3526,15 @@ a {
 
 .client-page-heading {
   align-items: end;
+  background: var(--client-panel);
+  border: 1px solid var(--client-border);
+  border-radius: 34px;
+  box-shadow: var(--client-shadow);
   display: flex;
   gap: 24px;
   justify-content: space-between;
-  margin-bottom: 28px;
+  margin-bottom: 0;
+  padding: clamp(28px, 5vw, 54px);
 }
 
 .client-page-heading h1 {
@@ -4352,19 +4359,6 @@ a {
   padding: 14px 18px;
 }
 
-.client-shell .metric-grid {
-  margin: 0 0 20px;
-}
-
-.client-shell .metric-card {
-  padding: 24px;
-}
-
-.client-shell .metric-card strong {
-  color: var(--client-ink);
-  font-size: 38px;
-}
-
 .client-metrics-hero {
   align-items: stretch;
   background:
@@ -4400,8 +4394,38 @@ a {
   grid-template-columns: 1fr;
 }
 
-.client-metric-kpis {
-  margin: 0;
+.client-metrics-summary {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.client-metrics-card {
+  background: var(--client-panel-solid);
+  border: 1px solid var(--client-border);
+  border-radius: 24px;
+  box-shadow: 0 16px 42px rgba(9, 21, 16, 0.05);
+  display: grid;
+  gap: 8px;
+  min-height: 112px;
+  padding: 22px;
+}
+
+.client-metrics-hero-stats .client-metrics-card {
+  background: var(--client-bg);
+  box-shadow: none;
+}
+
+.client-metrics-card span {
+  color: var(--client-muted);
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.client-metrics-card strong {
+  color: var(--client-ink);
+  font-size: 38px;
+  line-height: 1;
 }
 
 .client-metrics-panel {
@@ -4422,7 +4446,7 @@ a {
   display: grid;
   gap: 10px;
   grid-template-columns: repeat(14, minmax(0, 1fr));
-  min-height: 260px;
+  min-height: 250px;
   padding: 20px;
 }
 
@@ -4650,6 +4674,7 @@ a {
   .client-device-workspace,
   .client-claim-grid,
   .client-metrics-hero,
+  .client-metrics-summary,
   .client-metrics-split {
     grid-template-columns: 1fr;
   }
@@ -4721,6 +4746,7 @@ a {
     grid-template-columns: 1fr;
   }
 
+  .client-metrics-summary,
   .client-devices-overview {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -4763,6 +4789,10 @@ a {
 
   .client-metrics-bar {
     min-width: 30px;
+  }
+
+  .client-metrics-summary {
+    grid-template-columns: 1fr;
   }
 
   .client-interaction-row {
