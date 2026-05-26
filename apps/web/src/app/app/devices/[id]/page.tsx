@@ -88,75 +88,142 @@ function ClientDeviceDetailContent({ user }: { user: AuthUser }) {
 
       {device ? (
         <>
-          {metrics ? (
-            <section className="metric-grid">
-              <MetricCard label={t("metrics.totalScans")} value={metrics.totalScans} />
-              <MetricCard label={t("metrics.qrScans")} value={metrics.qrScans} />
-              <MetricCard label={t("metrics.nfcTaps")} value={metrics.nfcTaps} />
-              <MetricCard label={t("metrics.redirects")} value={metrics.redirects} />
-            </section>
-          ) : null}
+          <section className="client-device-detail-hero">
+            <div className="client-device-identity">
+              <div className="client-device-badge" aria-hidden="true">
+                {device.deviceType.name.slice(0, 2).toUpperCase()}
+              </div>
+              <div>
+                <p className="client-eyebrow">{device.deviceType.name}</p>
+                <h2>{device.alias || device.publicCode}</h2>
+                <span>{t("common.code")} {device.publicCode}</span>
+              </div>
+            </div>
 
-          <section className="detail-grid">
-            <div>
-              <span>{t("common.code")}</span>
-              <strong>{device.publicCode}</strong>
-            </div>
-            <div>
-              <span>{t("common.type")}</span>
-              <strong>{device.deviceType.name}</strong>
-            </div>
-            <div>
-              <span>{t("common.status")}</span>
-              <strong>{translateStatus(t, device.operationalStatus)}</strong>
-            </div>
-            <div>
-              <span>{t("common.lastScan")}</span>
-              <strong>{device.lastScanAt ? formatDateTime(locale, device.lastScanAt) : t("common.noScans")}</strong>
+            <div className="client-device-state-grid">
+              <DeviceStateCard
+                label={t("common.status")}
+                tone={device.operationalStatus === "ACTIVE" ? "success" : device.operationalStatus === "PAUSED" ? "warning" : "neutral"}
+                value={translateStatus(t, device.operationalStatus)}
+              />
+              <DeviceStateCard
+                label={t("client.destinationStatus")}
+                tone={device.targetUrl ? "success" : "warning"}
+                value={device.targetUrl ? t("client.destinationReady") : t("client.destinationMissing")}
+              />
+              <DeviceStateCard
+                label={t("common.lastScan")}
+                tone={device.lastScanAt ? "success" : "neutral"}
+                value={device.lastScanAt ? formatDateTime(locale, device.lastScanAt) : t("common.noScans")}
+              />
             </div>
           </section>
 
-          <form className="admin-form config-form" onSubmit={onSubmit}>
-            <label>
-              {t("common.alias")}
-              <input
-                maxLength={120}
-                onChange={(event) => setAlias(event.target.value)}
-                placeholder="Front counter"
-                value={alias}
-              />
-            </label>
+          {metrics ? (
+            <section className="client-device-metrics-panel">
+              <div className="client-section-heading">
+                <div>
+                  <p className="client-eyebrow">{t("common.metrics")}</p>
+                  <h2>{t("client.performanceTitle")}</h2>
+                </div>
+                <span>{t("client.last30Days")}</span>
+              </div>
 
-            <label>
-              {t("common.targetUrl")}
-              <input
-                maxLength={2000}
-                onChange={(event) => setTargetUrl(event.target.value)}
-                placeholder="https://g.page/r/..."
-                type="url"
-                value={targetUrl}
-              />
-            </label>
+              <div className="metric-grid">
+                <MetricCard label={t("metrics.totalScans")} value={metrics.totalScans} />
+                <MetricCard label={t("metrics.qrScans")} value={metrics.qrScans} />
+                <MetricCard label={t("metrics.nfcTaps")} value={metrics.nfcTaps} />
+                <MetricCard label={t("metrics.redirects")} value={metrics.redirects} />
+              </div>
 
-            <label>
-              {t("common.deviceStatus")}
-              <select
-                onChange={(event) => setOperationalStatus(event.target.value as EditableOperationalStatus)}
-                value={operationalStatus}
-              >
-                <option value="ACTIVE">{t("status.ACTIVE")}</option>
-                <option value="PAUSED">{t("status.PAUSED")}</option>
-                <option value="INACTIVE">{t("status.INACTIVE")}</option>
-              </select>
-            </label>
+              <ActivityBars emptyLabel={t("metrics.noScans30")} points={metrics.scansByDay.slice(-14)} />
+            </section>
+          ) : null}
 
-            <button disabled={isSaving} type="submit">
-              {isSaving ? t("common.saving") : t("client.saveConfiguration")}
-            </button>
-          </form>
+          <section className="client-device-workspace">
+            <div className="client-config-card">
+              <div className="client-section-heading">
+                <div>
+                  <p className="client-eyebrow">{t("client.configuration")}</p>
+                  <h2>{t("client.configureDestination")}</h2>
+                </div>
+              </div>
+              <p>{t("client.configureDestinationDescription")}</p>
+
+              <form className="admin-form config-form" onSubmit={onSubmit}>
+                <label>
+                  {t("common.alias")}
+                  <input
+                    maxLength={120}
+                    onChange={(event) => setAlias(event.target.value)}
+                    placeholder={t("client.aliasPlaceholder")}
+                    value={alias}
+                  />
+                </label>
+
+                <label>
+                  {t("common.targetUrl")}
+                  <input
+                    maxLength={2000}
+                    onChange={(event) => setTargetUrl(event.target.value)}
+                    placeholder="https://g.page/r/..."
+                    type="url"
+                    value={targetUrl}
+                  />
+                </label>
+
+                <label>
+                  {t("common.deviceStatus")}
+                  <select
+                    onChange={(event) => setOperationalStatus(event.target.value as EditableOperationalStatus)}
+                    value={operationalStatus}
+                  >
+                    <option value="ACTIVE">{t("status.ACTIVE")}</option>
+                    <option value="PAUSED">{t("status.PAUSED")}</option>
+                    <option value="INACTIVE">{t("status.INACTIVE")}</option>
+                  </select>
+                </label>
+
+                <button disabled={isSaving} type="submit">
+                  {isSaving ? t("common.saving") : t("client.saveConfiguration")}
+                </button>
+              </form>
+            </div>
+
+            <div className="client-device-side-panel">
+              <div className="client-side-panel-block">
+                <p className="client-eyebrow">{t("client.currentSetup")}</p>
+                <dl>
+                  <div>
+                    <dt>{t("common.type")}</dt>
+                    <dd>{device.deviceType.name}</dd>
+                  </div>
+                  <div>
+                    <dt>{t("common.status")}</dt>
+                    <dd>{translateStatus(t, device.operationalStatus)}</dd>
+                  </div>
+                  <div>
+                    <dt>{t("common.targetUrl")}</dt>
+                    <dd>{device.targetUrl ? t("common.configured") : t("common.noTarget")}</dd>
+                  </div>
+                </dl>
+              </div>
+
+              <div className="client-side-panel-block">
+                <p className="client-eyebrow">{t("client.nextStep")}</p>
+                <h3>{device.targetUrl ? t("client.readyToUse") : t("client.configureBeforeUse")}</h3>
+                <p>{device.targetUrl ? t("client.readyToUseDescription") : t("client.configureBeforeUseDescription")}</p>
+              </div>
+            </div>
+          </section>
 
           <section className="events-section">
-            <h2>{t("metrics.latestInteractions")}</h2>
+            <div className="client-section-heading">
+              <div>
+                <p className="client-eyebrow">{t("client.activity")}</p>
+                <h2>{t("metrics.latestInteractions")}</h2>
+              </div>
+            </div>
             {device.events?.length ? (
               <div className="table-list">
                 {device.events.map((event) => (
@@ -180,11 +247,45 @@ function ClientDeviceDetailContent({ user }: { user: AuthUser }) {
   );
 }
 
+function DeviceStateCard({
+  label,
+  tone,
+  value
+}: {
+  label: string;
+  tone: "neutral" | "success" | "warning";
+  value: string;
+}) {
+  return (
+    <div className={`client-device-state-card is-${tone}`}>
+      <span>{label}</span>
+      <strong>{value}</strong>
+    </div>
+  );
+}
+
 function MetricCard({ label, value }: { label: string; value: number }) {
   return (
     <div className="metric-card">
       <span>{label}</span>
       <strong>{value}</strong>
+    </div>
+  );
+}
+
+function ActivityBars({ emptyLabel, points }: { emptyLabel: string; points: { date: string; total: number }[] }) {
+  const maxValue = Math.max(...points.map((point) => point.total), 1);
+  const hasActivity = points.some((point) => point.total > 0);
+
+  return (
+    <div className="client-activity-bars" aria-hidden="true">
+      {hasActivity ? (
+        points.map((point) => (
+          <span key={point.date} style={{ height: `${Math.max(8, (point.total / maxValue) * 100)}%` }} />
+        ))
+      ) : (
+        <p>{emptyLabel}</p>
+      )}
     </div>
   );
 }
