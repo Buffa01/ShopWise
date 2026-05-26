@@ -1419,17 +1419,77 @@ a {
   margin-top: 8px;
 }
 
+.client-devices-overview {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.client-device-summary-card {
+  background: var(--client-panel-solid);
+  border: 1px solid var(--client-border);
+  border-radius: 24px;
+  box-shadow: 0 16px 42px rgba(9, 21, 16, 0.05);
+  display: grid;
+  gap: 8px;
+  min-height: 118px;
+  padding: 22px;
+}
+
+.client-device-summary-card span {
+  color: var(--client-muted);
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.client-device-summary-card strong {
+  color: var(--client-ink);
+  font-size: 38px;
+  line-height: 1;
+}
+
 .client-device-card {
   color: var(--client-ink);
   display: grid;
   gap: 22px;
   padding: 24px;
   text-decoration: none;
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease,
+    transform 160ms ease;
 }
 
-.client-device-card > div {
+.client-device-card:hover {
+  border-color: rgba(0, 200, 83, 0.42);
+  box-shadow: 0 22px 58px rgba(9, 21, 16, 0.1);
+  transform: translateY(-2px);
+}
+
+.client-device-card-header {
+  align-items: start;
+  display: grid;
+  gap: 14px;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+}
+
+.client-device-card-header > div:not(.client-device-card-icon) {
   display: grid;
   gap: 6px;
+  min-width: 0;
+}
+
+.client-device-card-icon {
+  align-items: center;
+  background: var(--client-soft);
+  border: 1px solid rgba(0, 128, 86, 0.1);
+  border-radius: 20px;
+  color: var(--client-green-dark);
+  display: inline-flex;
+  font-weight: 950;
+  height: 58px;
+  justify-content: center;
+  width: 58px;
 }
 
 .client-device-card strong {
@@ -1467,6 +1527,115 @@ a {
   font-weight: 900;
   margin: 0;
   text-align: right;
+}
+
+.client-device-status-badge {
+  border-radius: 999px;
+  border: 1px solid transparent;
+  font-size: 12px;
+  font-weight: 950;
+  line-height: 1;
+  padding: 9px 11px;
+  white-space: nowrap;
+}
+
+.client-device-status-badge.is-success {
+  background: rgba(0, 200, 83, 0.12);
+  border-color: rgba(0, 200, 83, 0.26);
+  color: var(--client-green-dark);
+}
+
+.client-device-status-badge.is-warning,
+.client-device-status-badge.is-setup {
+  background: rgba(245, 158, 11, 0.12);
+  border-color: rgba(245, 158, 11, 0.26);
+  color: #a15c00;
+}
+
+.client-device-status-badge.is-neutral {
+  background: var(--client-bg);
+  border-color: var(--client-border);
+  color: var(--client-muted);
+}
+
+.client-device-card-footer {
+  align-items: center;
+  background: var(--client-bg);
+  border: 1px solid var(--client-border);
+  border-radius: 18px;
+  display: flex;
+  gap: 12px;
+  justify-content: space-between;
+  padding: 14px 16px;
+}
+
+.client-device-card-footer span {
+  color: var(--client-muted);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.client-device-card-footer strong {
+  color: var(--client-ink);
+  font-size: 14px;
+}
+
+.client-empty-state {
+  display: grid;
+  gap: 24px;
+  justify-items: center;
+  padding: clamp(28px, 5vw, 48px);
+  text-align: center;
+}
+
+.client-empty-visual {
+  align-items: center;
+  background: radial-gradient(circle at 50% 40%, rgba(0, 200, 83, 0.18), transparent 62%);
+  display: flex;
+  justify-content: center;
+  min-height: 170px;
+  position: relative;
+}
+
+.client-empty-device,
+.client-empty-signal {
+  align-items: center;
+  border-radius: 24px;
+  display: inline-flex;
+  font-weight: 950;
+  justify-content: center;
+}
+
+.client-empty-device {
+  background: #0b1117;
+  box-shadow: 0 22px 52px rgba(9, 21, 16, 0.22);
+  color: #ffffff;
+  height: 116px;
+  width: 116px;
+}
+
+.client-empty-signal {
+  background: var(--client-panel-solid);
+  border: 1px solid var(--client-border);
+  color: var(--client-green-dark);
+  height: 82px;
+  margin-left: -22px;
+  margin-top: 62px;
+  width: 82px;
+}
+
+.client-empty-actions {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  justify-content: center;
+}
+
+.client-empty-actions span {
+  color: var(--client-muted);
+  font-size: 14px;
+  font-weight: 800;
 }
 
 .client-device-detail-hero,
@@ -2061,6 +2230,10 @@ a {
     grid-template-columns: 1fr;
   }
 
+  .client-devices-overview {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .client-claim-steps {
     grid-template-columns: 1fr;
   }
@@ -2075,6 +2248,24 @@ a {
   .client-primary-action,
   .client-secondary-action {
     width: 100%;
+  }
+
+  .client-device-card-header {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .client-device-status-badge {
+    justify-self: start;
+  }
+
+  .client-device-card-footer {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .client-device-summary-card {
+    min-height: 104px;
+    padding: 18px;
   }
 
   .client-shell .events-row,
