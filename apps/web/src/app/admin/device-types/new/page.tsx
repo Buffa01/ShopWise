@@ -14,21 +14,26 @@ export default function NewDeviceTypePage() {
   return (
     <AdminAuthGate>
       {() => (
-        <main className="dashboard-shell">
-          <div className="page-header">
+        <main className="dashboard-shell admin-device-type-edit-page">
+          <section className="admin-device-type-edit-hero">
             <div>
-              <p className="eyebrow">{t("common.admin")}</p>
+              <p className="eyebrow">{t("admin.templatesAndPrint")}</p>
               <h1>{t("admin.newDeviceType")}</h1>
+              <p>{t("admin.newDeviceTypeDescription")}</p>
             </div>
-            <Link href="/admin/device-types">{t("common.back")}</Link>
-          </div>
-          <DeviceTypeForm
-            onSubmit={async (input) => {
-              const deviceType = await createDeviceType(input);
-              router.push(`/admin/device-types/${deviceType.id}`);
-            }}
-            submitLabel={t("admin.createType")}
-          />
+            <Link className="admin-secondary-action" href="/admin/device-types">
+              {t("common.back")}
+            </Link>
+          </section>
+          <section className="admin-device-type-edit-grid is-single">
+            <DeviceTypeForm
+              onSubmit={async (input) => {
+                const deviceType = await createDeviceType(input);
+                router.push(`/admin/device-types/${deviceType.id}`);
+              }}
+              submitLabel={t("admin.createType")}
+            />
+          </section>
         </main>
       )}
     </AdminAuthGate>

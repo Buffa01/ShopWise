@@ -51,50 +51,53 @@ export function DeviceTypeForm({ initialValue, submitLabel, onSubmit }: DeviceTy
   }
 
   return (
-    <form className="admin-form" onSubmit={handleSubmit}>
-      <label>
-        {t("common.name")}
-        <input
-          onBlur={fillSlug}
-          onChange={(event) => setName(event.target.value)}
-          required
-          value={name}
-        />
-      </label>
+    <form className="admin-form admin-device-type-form" onSubmit={handleSubmit}>
+      <div className="admin-device-type-form-heading">
+        <span>{t("admin.deviceTypeConfiguration")}</span>
+        <strong>{t("admin.deviceTypeConfigurationTitle")}</strong>
+        <p>{t("admin.deviceTypeConfigurationDescription")}</p>
+      </div>
 
-      <label>
-        {t("admin.slug")}
-        <input
-          onChange={(event) => setSlug(event.target.value)}
-          pattern="^[a-z0-9]+(-[a-z0-9]+)*$"
-          required
-          value={slug}
-        />
-      </label>
+      <div className="admin-device-type-form-grid">
+        <label>
+          {t("common.name")}
+          <input onBlur={fillSlug} onChange={(event) => setName(event.target.value)} required value={name} />
+        </label>
+
+        <label>
+          {t("admin.slug")}
+          <input onChange={(event) => setSlug(event.target.value)} pattern="^[a-z0-9]+(-[a-z0-9]+)*$" required value={slug} />
+        </label>
+      </div>
 
       <label>
         {t("common.description")}
-        <textarea onChange={(event) => setDescription(event.target.value)} rows={3} value={description} />
+        <textarea onChange={(event) => setDescription(event.target.value)} rows={4} value={description} />
       </label>
 
-      <label className="checkbox-row">
+      <div className="admin-device-type-form-grid">
+        <label>
+          {t("admin.defaultPrefix")}
+          <input
+            maxLength={12}
+            onChange={(event) => setDefaultPrefix(event.target.value.toUpperCase())}
+            pattern="^[A-Z0-9]*$"
+            value={defaultPrefix}
+          />
+        </label>
+
+        <label>
+          {t("admin.templateKey")}
+          <input onChange={(event) => setTemplateKey(event.target.value)} placeholder="sticker/google-review" value={templateKey} />
+        </label>
+      </div>
+
+      <label className="admin-device-type-toggle">
         <input checked={isActive} onChange={(event) => setIsActive(event.target.checked)} type="checkbox" />
-        {t("common.active")}
-      </label>
-
-      <label>
-        {t("admin.defaultPrefix")}
-        <input
-          maxLength={12}
-          onChange={(event) => setDefaultPrefix(event.target.value.toUpperCase())}
-          pattern="^[A-Z0-9]*$"
-          value={defaultPrefix}
-        />
-      </label>
-
-      <label>
-        {t("admin.templateKey")}
-        <input onChange={(event) => setTemplateKey(event.target.value)} value={templateKey} />
+        <span>
+          <strong>{t("common.active")}</strong>
+          <small>{t("admin.activeTypeDescription")}</small>
+        </span>
       </label>
 
       {error ? <p className="form-error">{error}</p> : null}

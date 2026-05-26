@@ -150,30 +150,62 @@ export function StickerTemplateEditor({ deviceType, onChange }: StickerTemplateE
 
   return (
     <section className="template-editor">
-      <div>
-        <p className="eyebrow">{t("template.title")}</p>
-        <h2>{t("template.qrPlacement")}</h2>
+      <div className="template-editor-heading">
+        <div>
+          <p className="eyebrow">{t("template.title")}</p>
+          <h2>{t("template.qrPlacement")}</h2>
+        </div>
+        <p>{t("template.editorDescription")}</p>
       </div>
 
       <div className="template-editor-grid">
-        <div className="template-preview" ref={previewRef}>
-          {selectedDesignUrl ? (
-            <img alt={t("template.uploadDesign")} src={selectedDesignUrl} />
-          ) : designUrl ? (
-            <img alt={t("template.title")} src={designUrl} />
-          ) : (
-            <div className="template-preview-empty">{t("template.uploadDesign")}</div>
-          )}
-          <div
-            className="qr-placement-box"
-            onPointerDown={onPointerDown}
-            onPointerMove={onPointerMove}
-            role="presentation"
-            style={qrStyle}
-          />
+        <div className="template-preview-panel">
+          <div className="template-preview-toolbar">
+            <div>
+              <span>{t("template.printPreview")}</span>
+              <strong>{stickerSizeMm}mm x {stickerSizeMm}mm</strong>
+            </div>
+            <span>{selectedFile ? t("template.localPreview") : designUrl ? t("template.savedDesign") : t("template.noDesign")}</span>
+          </div>
+
+          <div className="template-preview-stage">
+            <div className="template-preview" ref={previewRef}>
+              {selectedDesignUrl ? (
+                <img alt={t("template.uploadDesign")} src={selectedDesignUrl} />
+              ) : designUrl ? (
+                <img alt={t("template.title")} src={designUrl} />
+              ) : (
+                <div className="template-preview-empty">
+                  <span>{t("template.uploadDesign")}</span>
+                  <small>{t("template.uploadDesignHint")}</small>
+                </div>
+              )}
+              <div
+                className="qr-placement-box"
+                onPointerDown={onPointerDown}
+                onPointerMove={onPointerMove}
+                role="presentation"
+                style={qrStyle}
+              >
+                <span>QR</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="template-preview-facts">
+            <TemplateFact label="X" value={`${xMm}mm`} />
+            <TemplateFact label="Y" value={`${yMm}mm`} />
+            <TemplateFact label={t("template.qrSize")} value={`${qrWidthMm} x ${qrHeightMm}mm`} />
+          </div>
         </div>
 
         <div className="admin-form template-controls">
+          <div className="template-controls-heading">
+            <span>{t("template.controls")}</span>
+            <strong>{t("template.printSetup")}</strong>
+            <p>{t("template.controlsDescription")}</p>
+          </div>
+
           <label>
             {t("template.baseDesign")}
             <input
@@ -182,38 +214,52 @@ export function StickerTemplateEditor({ deviceType, onChange }: StickerTemplateE
               type="file"
             />
           </label>
-          <label>
-            {t("template.stickerDiameter")}
-            <input
-              min={20}
-              onChange={(event) => onStickerSizeChange(event.target.value)}
-              type="number"
-              value={stickerSizeMm}
-            />
-          </label>
-          <label>
-            {t("template.qrWidth")}
-            <input min={5} onChange={(event) => onQrWidthChange(event.target.value)} type="number" value={qrWidthMm} />
-          </label>
-          <label>
-            {t("template.qrHeight")}
-            <input min={5} onChange={(event) => onQrHeightChange(event.target.value)} type="number" value={qrHeightMm} />
-          </label>
-          <div className="template-position-readout">
-            <span>X: {xMm}mm</span>
-            <span>Y: {yMm}mm</span>
+
+          {selectedFile ? (
+            <div className="template-selected-file">
+              <span>{t("template.selectedFile")}</span>
+              <strong>{selectedFile.name}</strong>
+            </div>
+          ) : null}
+
+          <div className="template-controls-grid">
+            <label>
+              {t("template.deviceDiameter")}
+              <input min={20} onChange={(event) => onStickerSizeChange(event.target.value)} type="number" value={stickerSizeMm} />
+            </label>
+            <label>
+              {t("template.qrWidth")}
+              <input min={5} onChange={(event) => onQrWidthChange(event.target.value)} type="number" value={qrWidthMm} />
+            </label>
+            <label>
+              {t("template.qrHeight")}
+              <input min={5} onChange={(event) => onQrHeightChange(event.target.value)} type="number" value={qrHeightMm} />
+            </label>
           </div>
-          <button className="button-secondary" onClick={() => centerQr(stickerSizeMm, qrWidthMm, qrHeightMm, setXMm, setYMm)} type="button">
-            {t("template.centerQr")}
-          </button>
-          <button disabled={isSaving} onClick={saveTemplate} type="button">
-            {isSaving ? t("common.saving") : t("template.save")}
-          </button>
+
+          <div className="template-controls-actions">
+            <button className="admin-secondary-action" onClick={() => centerQr(stickerSizeMm, qrWidthMm, qrHeightMm, setXMm, setYMm)} type="button">
+              {t("template.centerQr")}
+            </button>
+            <button className="admin-primary-action" disabled={isSaving} onClick={saveTemplate} type="button">
+              {isSaving ? t("common.saving") : t("template.save")}
+            </button>
+          </div>
+
           {error ? <p className="form-error">{error}</p> : null}
           {successMessage ? <p className="form-success">{successMessage}</p> : null}
         </div>
       </div>
     </section>
+  );
+}
+
+function TemplateFact({ label, value }: { label: string; value: string }) {
+  return (
+    <div>
+      <span>{label}</span>
+      <strong>{value}</strong>
+    </div>
   );
 }
 
