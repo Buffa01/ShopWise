@@ -21,6 +21,7 @@ import {
 import { Locale, formatDate, translateStatus, useI18n } from "../../../lib/i18n";
 
 type ProductionTab = "singles" | "batches";
+type ProductionFilter = "all" | "pending" | "generated" | "downloaded" | "printed" | "configured" | "missingAsset";
 type TFunction = ReturnType<typeof useI18n>["t"];
 
 export default function AdminProductionPage() {
@@ -39,6 +40,7 @@ function AdminProductionContent() {
   const [isMutating, setIsMutating] = useState<string | null>(null);
   const [tab, setTab] = useState<ProductionTab>("batches");
   const [query, setQuery] = useState("");
+  const [filter, setFilter] = useState<ProductionFilter>("all");
 
   function load() {
     setIsLoading(true);
@@ -64,8 +66,8 @@ function AdminProductionContent() {
     const normalized = query.trim().toLowerCase();
     if (!overview || !normalized) return overview?.singles ?? [];
 
-    return overview.singles.filter((device) => productionDeviceMatches(device, normalized));
-  }, [overview, query]);
+    return overview.singles.filter((device) => productionDeviceMatches(device, normalized) && productionDevicePassesFilter(device, filter));
+  }, [overview, filter, query]);
 
   const filteredBatches = useMemo(() => {
     const normalized = query.trim().toLowerCase();
@@ -76,9 +78,12 @@ function AdminProductionContent() {
         batch.id.toLowerCase().includes(normalized) ||
         (batch.prefix ?? "").toLowerCase().includes(normalized) ||
         batch.devices.some((device) => productionDeviceMatches(device, normalized))
-      );
+      ) && productionBatchPassesFilter(batch, filter);
     });
-  }, [overview, query]);
+  }, [overview, filter, query]);
+
+  const visibleDevices = tab === "batches" ? filteredBatches.flatMap((batch) => batch.devices) : filteredSingles;
+  const visibleActionSummary = buildVisibleActionSummary(visibleDevices);
 
   async function runMutation(key: string, action: () => Promise<unknown>) {
     setIsMutating(key);
@@ -128,6 +133,7 @@ function AdminProductionContent() {
   const storageUsagePercent = overview
     ? Math.min(100, Math.round((Number(overview.storage.usedBytes) / Number(overview.storage.totalLimitBytes || "1")) * 100))
     : 0;
+  const storageUsageLabel = overview && Number(overview.storage.usedBytes) > 0 && storageUsagePercent === 0 ? "<1%" : `${storageUsagePercent}%`;
 
   return (
     <main className="dashboard-shell admin-production-page">
@@ -161,13 +167,15 @@ function AdminProductionContent() {
         <AdminProductionStat label={t("admin.productionItems")} value={overview?.summary.totalItems} />
         <AdminProductionStat label={t("metrics.totalDevices")} value={overview?.summary.totalDevices} />
         <AdminProductionStat label={t("admin.productionGenerated")} value={overview?.summary.generatedDevices} />
+        <AdminProductionStat label={t("admin.productionDownloaded")} value={overview?.summary.downloadedDevices} />
         <AdminProductionStat label={t("admin.productionPrinted")} value={overview?.summary.printedDevices} />
+        <AdminProductionStat label={t("common.configured")} value={overview?.summary.configuredDevices} />
       </section>
 
       <section className="admin-production-storage">
         <div>
           <span>{t("admin.assetRetentionPolicy")}</span>
-        <strong>{overview ? `${overview.storage.retentionDays} ${t("common.days")}` : t("common.loading")}</strong>
+          <strong>{overview ? `${overview.storage.retentionDays} ${t("common.days")}` : t("common.loading")}</strong>
           <p>{t("admin.assetRetentionDescription")}</p>
         </div>
         <div className="admin-production-storage-meter">
@@ -178,7 +186,11 @@ function AdminProductionContent() {
           <div className="admin-production-meter-track">
             <span style={{ width: `${storageUsagePercent}%` }} />
           </div>
-          <small>{storageUsagePercent}%</small>
+          <small>{storageUsageLabel}</small>
+        </div>
+        <div className="admin-production-storage-facts">
+          <ProductionFact label={t("admin.maxAssetSize")} value={formatBytes(overview?.storage.maxObjectBytes)} />
+          <ProductionFact label={t("admin.regenerableAssets")} value={t("admin.regenerableAssetsDescription")} />
         </div>
       </section>
 
@@ -204,6 +216,21 @@ function AdminProductionContent() {
             {t("common.search")}
             <input onChange={(event) => setQuery(event.target.value)} placeholder={t("admin.productionSearchPlaceholder")} value={query} />
           </label>
+        </div>
+
+        <div className="admin-production-filterbar" aria-label={t("admin.productionFilters")}>
+          {PRODUCTION_FILTERS.map((item) => (
+            <button className={filter === item ? "is-active" : ""} key={item} onClick={() => setFilter(item)} type="button">
+              {productionFilterLabel(t, item)}
+            </button>
+          ))}
+        </div>
+
+        <div className="admin-production-ops-summary">
+          <ProductionFact label={t("admin.readyToDownload")} value={visibleActionSummary.readyToDownload} />
+          <ProductionFact label={t("admin.readyToPrint")} value={visibleActionSummary.readyToPrint} />
+          <ProductionFact label={t("admin.pendingConfiguration")} value={visibleActionSummary.pendingConfiguration} />
+          <ProductionFact label={t("admin.missingAssets")} value={visibleActionSummary.missingAssets} />
         </div>
 
         {tab === "batches" ? (
@@ -262,10 +289,13 @@ function ProductionBatchCard({
 }) {
   return (
     <article className="admin-production-card">
-      <div className="admin-production-card-main">
-        <span>{t("admin.batch")}</span>
-        <strong>{batch.prefix ? `${batch.prefix} · ${batch.id.slice(0, 8)}` : batch.id.slice(0, 8)}</strong>
-        <p>{batch.quantity} {t("common.devices").toLowerCase()} · {formatDate(locale, batch.createdAt)}</p>
+      <div className="admin-production-card-header">
+        <div className="admin-production-card-main">
+          <span>{t("admin.batch")}</span>
+          <strong>{batch.prefix ? `${batch.prefix} · ${batch.id.slice(0, 8)}` : batch.id.slice(0, 8)}</strong>
+          <p>{batch.quantity} {t("common.devices").toLowerCase()} · {formatDate(locale, batch.createdAt)}</p>
+        </div>
+        <ProductionHealthBadge batch={batch} t={t} />
       </div>
       <ProductionProgress counts={batch.counts} t={t} />
       <div className="admin-production-card-actions">
@@ -276,6 +306,19 @@ function ProductionBatchCard({
           {t("admin.markPrinted")}
         </button>
       </div>
+      <details className="admin-production-batch-detail">
+        <summary>{t("admin.viewBatchDevices")}</summary>
+        <div className="admin-production-batch-devices">
+          {batch.devices.map((device) => (
+            <Link className="admin-production-batch-device" href={`/admin/devices/${device.id}`} key={device.id}>
+              <strong>{device.publicCode}</strong>
+              <span>{translateStatus(t, device.productionStatus)}</span>
+              <span>{device.businessName ?? t("common.noClient")}</span>
+              <span>{formatBytes(device.latestAsset?.totalBytes)}</span>
+            </Link>
+          ))}
+        </div>
+      </details>
     </article>
   );
 }
@@ -301,10 +344,13 @@ function ProductionDeviceCard({
 }) {
   return (
     <article className="admin-production-card">
-      <div className="admin-production-card-main">
-        <span>{device.deviceTypeName}</span>
-        <strong>{device.publicCode}</strong>
-        <p>{device.businessName ?? t("common.noClient")} · {formatDate(locale, device.createdAt)}</p>
+      <div className="admin-production-card-header">
+        <div className="admin-production-card-main">
+          <span>{device.deviceTypeName}</span>
+          <strong>{device.publicCode}</strong>
+          <p>{device.businessName ?? t("common.noClient")} · {formatDate(locale, device.createdAt)}</p>
+        </div>
+        <ProductionDeviceHealthBadge device={device} t={t} />
       </div>
       <div className="admin-production-status-line">
         <ProductionStep active label={t("status.CREATED")} />
@@ -314,8 +360,11 @@ function ProductionDeviceCard({
         <ProductionStep active={device.isConfigured} label={t("common.configured")} />
       </div>
       <div className="admin-production-asset-meta">
-        <span>{translateStatus(t, device.productionStatus)}</span>
-        <span>{device.latestAsset?.pdfKey ?? t("admin.assetCanRegenerate")}</span>
+        <ProductionFact label={t("admin.productionStatus")} value={translateStatus(t, device.productionStatus)} />
+        <ProductionFact label={t("admin.assetCreatedAt")} value={device.latestAsset ? formatDate(locale, device.latestAsset.createdAt) : t("admin.assetCanRegenerate")} />
+        <ProductionFact label={t("admin.totalAssetSize")} value={formatBytes(device.latestAsset?.totalBytes)} />
+        <ProductionFact label={t("admin.pdfAsset")} value={device.latestAsset?.pdfKey ? `${formatBytes(device.latestAsset.pdfBytes)} · ${device.latestAsset.pdfKey}` : t("common.notSet")} />
+        <ProductionFact label={t("admin.qrAsset")} value={device.latestAsset?.qrImageKey ? `${formatBytes(device.latestAsset.qrImageBytes)} · ${device.latestAsset.qrImageKey}` : t("common.notSet")} />
       </div>
       <div className="admin-production-card-actions">
         <Link className="admin-secondary-action" href={`/admin/devices/${device.id}`}>
@@ -336,6 +385,30 @@ function ProductionDeviceCard({
       </div>
     </article>
   );
+}
+
+function ProductionHealthBadge({ batch, t }: { batch: ProductionBatchItem; t: TFunction }) {
+  const tone = batch.counts.printed === batch.counts.total ? "success" : batch.counts.generated === batch.counts.total ? "warning" : "neutral";
+  const label = batch.counts.printed === batch.counts.total
+    ? t("admin.batchReady")
+    : batch.counts.generated === batch.counts.total
+      ? t("admin.batchReadyToPrint")
+      : t("admin.batchNeedsAssets");
+
+  return <span className={`admin-production-health is-${tone}`}>{label}</span>;
+}
+
+function ProductionDeviceHealthBadge({ device, t }: { device: ProductionDeviceItem; t: TFunction }) {
+  const label = !device.hasAsset
+    ? t("admin.assetMissing")
+    : device.productionStatus === "PRINTED"
+      ? t("admin.printed")
+      : device.productionStatus === "DOWNLOADED"
+        ? t("admin.readyToPrint")
+        : t("admin.readyToDownload");
+  const tone = !device.hasAsset ? "neutral" : device.productionStatus === "PRINTED" ? "success" : "warning";
+
+  return <span className={`admin-production-health is-${tone}`}>{label}</span>;
 }
 
 function ProductionProgress({ counts, t }: { counts: ProductionBatchItem["counts"]; t: TFunction }) {
@@ -371,6 +444,15 @@ function AdminProductionStat({ label, value }: { label: string; value?: number }
   );
 }
 
+function ProductionFact({ label, value }: { label: string; value: string | number }) {
+  return (
+    <div className="admin-production-fact">
+      <span>{label}</span>
+      <strong>{value}</strong>
+    </div>
+  );
+}
+
 function ProductionEmpty({ t }: { t: TFunction }) {
   return (
     <div className="admin-production-empty">
@@ -384,9 +466,49 @@ function ProductionEmpty({ t }: { t: TFunction }) {
 }
 
 function productionDeviceMatches(device: ProductionDeviceItem, normalized: string) {
-  return [device.publicCode, device.deviceTypeName, device.businessName, device.latestAsset?.pdfKey]
+  return [device.publicCode, device.deviceTypeName, device.businessName, device.latestAsset?.pdfKey, device.latestAsset?.qrImageKey]
     .filter(Boolean)
     .some((value) => value?.toLowerCase().includes(normalized));
+}
+
+const PRODUCTION_FILTERS: ProductionFilter[] = ["all", "missingAsset", "generated", "downloaded", "printed", "configured"];
+
+function productionDevicePassesFilter(device: ProductionDeviceItem, filter: ProductionFilter) {
+  if (filter === "all") return true;
+  if (filter === "missingAsset") return !device.hasAsset;
+  if (filter === "generated") return device.hasAsset;
+  if (filter === "downloaded") return device.productionStatus === "DOWNLOADED";
+  if (filter === "printed") return device.productionStatus === "PRINTED";
+  if (filter === "configured") return device.isConfigured;
+  return device.productionStatus === "CREATED" || device.productionStatus === "ASSET_GENERATED";
+}
+
+function productionBatchPassesFilter(batch: ProductionBatchItem, filter: ProductionFilter) {
+  if (filter === "all") return true;
+  return batch.devices.some((device) => productionDevicePassesFilter(device, filter));
+}
+
+function productionFilterLabel(t: TFunction, filter: ProductionFilter) {
+  const labels: Record<ProductionFilter, string> = {
+    all: t("common.all"),
+    pending: t("admin.pending"),
+    generated: t("admin.productionGenerated"),
+    downloaded: t("admin.productionDownloaded"),
+    printed: t("admin.productionPrinted"),
+    configured: t("common.configured"),
+    missingAsset: t("admin.missingAssets")
+  };
+
+  return labels[filter];
+}
+
+function buildVisibleActionSummary(devices: ProductionDeviceItem[]) {
+  return {
+    missingAssets: devices.filter((device) => !device.hasAsset).length,
+    pendingConfiguration: devices.filter((device) => !device.isConfigured).length,
+    readyToDownload: devices.filter((device) => device.hasAsset && device.productionStatus === "ASSET_GENERATED").length,
+    readyToPrint: devices.filter((device) => device.productionStatus === "DOWNLOADED").length
+  };
 }
 
 function triggerDownload(blob: Blob, filename: string) {
@@ -398,7 +520,7 @@ function triggerDownload(blob: Blob, filename: string) {
   URL.revokeObjectURL(url);
 }
 
-function formatBytes(value: string | undefined) {
+function formatBytes(value: string | null | undefined) {
   if (!value) return "...";
   const bytes = Number(value);
   if (!Number.isFinite(bytes)) return "...";
