@@ -120,6 +120,131 @@ export class AssetsService {
     };
   }
 
+  async regenerateDeviceAssets(deviceId: string) {
+    return this.generateDeviceAssets(deviceId);
+  }
+
+  async deleteDeviceAssetFiles(deviceId: string) {
+    const device = await this.prisma.device.findUniqueOrThrow({
+      where: { id: deviceId },
+      include: {
+        printAssets: true
+      }
+    });
+    const keys = new Set<string>();
+
+    if (device.qrImageKey) keys.add(device.qrImageKey);
+
+    device.printAssets.forEach((asset) => {
+      if (asset.pdfKey) keys.add(asset.pdfKey);
+      if (asset.pngKey) keys.add(asset.pngKey);
+      if (asset.svgKey) keys.add(asset.svgKey);
+    });
+
+    for (const key of keys) {
+      await this.storage.delete(key);
+    }
+
+    await this.prisma.$transaction([
+      this.prisma.printAsset.updateMany({
+        where: { deviceId },
+        data: {
+          pdfKey: null,
+          pngKey: null,
+          svgKey: null
+        }
+      }),
+      this.prisma.device.update({
+        where: { id: deviceId },
+        data: {
+          qrImageKey: null,
+          latestPrintAssetId: null,
+          productionStatus: ProductionStatus.CREATED
+        }
+      })
+    ]);
+
+    return {
+      deletedKeys: Array.from(keys)
+    };
+  }
+
+  async cleanupExpiredAssets(retentionDays: number) {
+    const cutoff = new Date();
+    cutoff.setUTCDate(cutoff.getUTCDate() - retentionDays);
+
+    const assets = await this.prisma.printAsset.findMany({
+      where: {
+        createdAt: {
+          lt: cutoff
+        },
+        OR: [{ pdfKey: { not: null } }, { pngKey: { not: null } }, { svgKey: { not: null } }]
+      },
+      include: {
+        device: true
+      }
+    });
+    const deletedKeys = new Set<string>();
+    const activeDeviceIds = new Set<string>();
+
+    for (const asset of assets) {
+      if (asset.pdfKey) deletedKeys.add(asset.pdfKey);
+      if (asset.pngKey) deletedKeys.add(asset.pngKey);
+      if (asset.svgKey) deletedKeys.add(asset.svgKey);
+      if (asset.device.latestPrintAssetId === asset.id) {
+        if (asset.device.qrImageKey) deletedKeys.add(asset.device.qrImageKey);
+        activeDeviceIds.add(asset.deviceId);
+      }
+    }
+
+    for (const key of deletedKeys) {
+      await this.storage.delete(key);
+    }
+
+    if (assets.length) {
+      await this.prisma.$transaction([
+        this.prisma.printAsset.updateMany({
+          where: {
+            id: {
+              in: assets.map((asset) => asset.id)
+            }
+          },
+          data: {
+            pdfKey: null,
+            pngKey: null,
+            svgKey: null
+          }
+        }),
+        this.prisma.device.updateMany({
+          where: {
+            id: {
+              in: Array.from(activeDeviceIds)
+            },
+            latestPrintAssetId: {
+              in: assets.map((asset) => asset.id)
+            }
+          },
+          data: {
+            qrImageKey: null,
+            latestPrintAssetId: null,
+            productionStatus: ProductionStatus.CREATED
+          }
+        })
+      ]);
+    }
+
+    return {
+      cutoff,
+      retentionDays,
+      deletedAssets: assets.length,
+      deletedKeys: Array.from(deletedKeys)
+    };
+  }
+
+  getStorageUsage() {
+    return this.storage.getUsage();
+  }
+
   async generateBatchPrintSheet(batchId: string) {
     const batch = await this.prisma.deviceBatch.findUnique({
       where: { id: batchId },

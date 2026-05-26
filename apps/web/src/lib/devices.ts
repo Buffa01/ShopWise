@@ -81,6 +81,66 @@ export interface DeviceBatch {
   devices: Device[];
 }
 
+export interface ProductionDeviceItem {
+  id: string;
+  publicCode: string;
+  deviceTypeName: string;
+  businessName: string | null;
+  batchId: string | null;
+  productionStatus: ProductionStatus;
+  assignmentStatus: AssignmentStatus;
+  operationalStatus: OperationalStatus;
+  isConfigured: boolean;
+  hasAsset: boolean;
+  latestAsset: {
+    id: string;
+    pdfKey: string | null;
+    pngKey: string | null;
+    svgKey: string | null;
+    createdAt: string;
+  } | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ProductionBatchItem {
+  id: string;
+  prefix: string | null;
+  quantity: number;
+  status: string;
+  createdAt: string;
+  updatedAt: string;
+  counts: {
+    total: number;
+    generated: number;
+    downloaded: number;
+    printed: number;
+    configured: number;
+  };
+  devices: ProductionDeviceItem[];
+}
+
+export interface ProductionOverview {
+  summary: {
+    totalItems: number;
+    singleDevices: number;
+    batches: number;
+    totalDevices: number;
+    generatedDevices: number;
+    downloadedDevices: number;
+    printedDevices: number;
+    configuredDevices: number;
+  };
+  storage: {
+    usedBytes: string;
+    totalLimitBytes: string;
+    maxObjectBytes: string;
+    retentionDays: number;
+  };
+  singles: ProductionDeviceItem[];
+  batches: ProductionBatchItem[];
+}
+
 function authHeaders() {
   const token = getAccessToken();
 
@@ -126,6 +186,12 @@ export function getBatchPrintSheetUrl(batchId: string) {
   return `${API_BASE_URL}/admin/devices/batches/${batchId}/assets/sheet`;
 }
 
+export function listProduction() {
+  return apiRequest<ProductionOverview>("/admin/devices/production", {
+    headers: authHeaders()
+  });
+}
+
 export function createDevice(input: { deviceTypeId: string; prefix?: string }) {
   return apiRequest<Device>("/admin/devices", {
     method: "POST",
@@ -155,6 +221,56 @@ export function updateAdminDevice(
     method: "PATCH",
     headers: authHeaders(),
     body: JSON.stringify(input)
+  });
+}
+
+export function markDeviceAssetDownloaded(id: string) {
+  return apiRequest<Device>(`/admin/devices/${id}/assets/mark-downloaded`, {
+    method: "POST",
+    headers: authHeaders()
+  });
+}
+
+export function markDevicePrinted(id: string) {
+  return apiRequest<Device>(`/admin/devices/${id}/mark-printed`, {
+    method: "POST",
+    headers: authHeaders()
+  });
+}
+
+export function regenerateDeviceAssets(id: string) {
+  return apiRequest<Device>(`/admin/devices/${id}/assets/regenerate`, {
+    method: "POST",
+    headers: authHeaders()
+  });
+}
+
+export function deleteDeviceAssetFiles(id: string) {
+  return apiRequest<Device>(`/admin/devices/${id}/assets/delete`, {
+    method: "POST",
+    headers: authHeaders()
+  });
+}
+
+export function markBatchPrinted(batchId: string) {
+  return apiRequest<ProductionOverview>(`/admin/devices/batches/${batchId}/mark-printed`, {
+    method: "POST",
+    headers: authHeaders()
+  });
+}
+
+export function markBatchDownloaded(batchId: string) {
+  return apiRequest<ProductionOverview>(`/admin/devices/batches/${batchId}/mark-downloaded`, {
+    method: "POST",
+    headers: authHeaders()
+  });
+}
+
+export function cleanupExpiredAssets(retentionDays?: number) {
+  return apiRequest<ProductionOverview>("/admin/devices/assets/cleanup-expired", {
+    method: "POST",
+    headers: authHeaders(),
+    body: JSON.stringify({ retentionDays })
   });
 }
 
