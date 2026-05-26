@@ -2405,6 +2405,25 @@ a {
   color: var(--admin-ink);
 }
 
+.admin-shell .detail-grid div {
+  background: var(--admin-panel-solid);
+  border-color: var(--admin-border);
+  border-radius: 16px;
+  box-shadow: 0 12px 28px rgba(9, 21, 16, 0.04);
+}
+
+.admin-shell.is-dark .detail-grid div {
+  box-shadow: none;
+}
+
+.admin-shell .detail-grid span {
+  color: var(--admin-muted);
+}
+
+.admin-shell .detail-grid strong {
+  color: var(--admin-ink);
+}
+
 .admin-loading {
   align-items: center;
   background: linear-gradient(135deg, #ffffff 0%, #eefaf3 100%);
