@@ -1,8 +1,8 @@
-import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import { Inject, Injectable } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
-import { GetObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import { DeleteObjectCommand, GetObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { badRequest } from "../../common/errors/http-errors";
 import { PrismaService } from "../../prisma/prisma.service";
 
@@ -65,6 +65,18 @@ export class StorageService {
     }
 
     return readFile(this.resolvePath(key));
+  }
+
+  async delete(key: string) {
+    if (this.driver === "r2") {
+      await this.deleteR2(key);
+    } else {
+      await rm(this.resolvePath(key), { force: true });
+    }
+
+    await this.prisma.storageObject.deleteMany({
+      where: { key }
+    });
   }
 
   resolvePath(key: string) {
@@ -131,6 +143,17 @@ export class StorageService {
         Bucket: bucket,
         Key: key,
         Body: Buffer.from(data)
+      })
+    );
+  }
+
+  private deleteR2(key: string) {
+    const bucket = this.requireR2Bucket();
+
+    return this.requireR2Client().send(
+      new DeleteObjectCommand({
+        Bucket: bucket,
+        Key: key
       })
     );
   }

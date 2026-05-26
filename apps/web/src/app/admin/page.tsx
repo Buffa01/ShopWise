@@ -70,6 +70,12 @@ function AdminHome() {
           meta={metrics ? `${metrics.topClients?.length ?? 0} ${t("metrics.topClients").toLowerCase()}` : t("common.loading")}
         />
         <AdminModuleCard
+          description={t("admin.productionModuleDescription")}
+          href="/admin/production"
+          label={t("admin.production")}
+          meta={t("admin.templatesAndPrint")}
+        />
+        <AdminModuleCard
           description={t("admin.deviceTypesModuleDescription")}
           href="/admin/device-types"
           label={t("admin.deviceTypes")}

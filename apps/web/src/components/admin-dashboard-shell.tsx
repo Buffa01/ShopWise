@@ -28,6 +28,7 @@ export function AdminDashboardShell({ children, user }: AdminDashboardShellProps
     { href: "/admin", label: t("admin.navOverview") },
     { href: "/admin/devices", label: t("common.devices") },
     { href: "/admin/clients", label: t("common.clients") },
+    { href: "/admin/production", label: t("admin.production") },
     { href: "/admin/device-types", label: t("admin.deviceTypes") },
     { href: "/admin/metrics", label: t("common.metrics") },
     { href: "/admin/audit-logs", label: t("common.auditLogs") }

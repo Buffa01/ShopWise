@@ -1,5 +1,5 @@
 import { Inject, Injectable, NotFoundException } from "@nestjs/common";
-import { AssignmentStatus, BatchStatus, DeviceEventType, OperationalStatus, Prisma } from "@prisma/client";
+import { AssignmentStatus, BatchStatus, DeviceEventType, OperationalStatus, Prisma, ProductionStatus } from "@prisma/client";
 import { AssetsService } from "../assets/assets.service";
 import { badRequest, forbidden } from "../../common/errors/http-errors";
 import { PrismaService } from "../../prisma/prisma.service";
@@ -26,6 +26,8 @@ const DEVICE_INCLUDE = {
   },
   batch: true
 } satisfies Prisma.DeviceInclude;
+
+const DEFAULT_ASSET_RETENTION_DAYS = 60;
 
 @Injectable()
 export class DevicesService {
@@ -167,6 +169,162 @@ export class DevicesService {
 
   getBatchPrintSheetFile(batchId: string) {
     return this.assets.generateBatchPrintSheet(batchId);
+  }
+
+  async listProduction() {
+    const [singleDevices, batches, usage] = await Promise.all([
+      this.prisma.device.findMany({
+        where: {
+          batchId: null
+        },
+        include: {
+          ...DEVICE_INCLUDE,
+          printAssets: {
+            orderBy: { createdAt: "desc" },
+            take: 1
+          }
+        },
+        orderBy: {
+          createdAt: "desc"
+        },
+        take: 100
+      }),
+      this.prisma.deviceBatch.findMany({
+        include: {
+          devices: {
+            orderBy: { publicCode: "asc" },
+            include: {
+              ...DEVICE_INCLUDE,
+              printAssets: {
+                orderBy: { createdAt: "desc" },
+                take: 1
+              }
+            }
+          }
+        },
+        orderBy: {
+          createdAt: "desc"
+        },
+        take: 50
+      }),
+      this.assets.getStorageUsage()
+    ]);
+
+    const singleItems = singleDevices.map((device) => this.toProductionDeviceItem(device));
+    const batchItems = batches.map((batch) => this.toProductionBatchItem(batch));
+    const allDeviceItems = [
+      ...singleItems,
+      ...batchItems.flatMap((batch) => batch.devices)
+    ];
+
+    return {
+      summary: {
+        totalItems: singleItems.length + batchItems.length,
+        singleDevices: singleItems.length,
+        batches: batchItems.length,
+        totalDevices: allDeviceItems.length,
+        generatedDevices: allDeviceItems.filter((device) => device.hasAsset).length,
+        downloadedDevices: allDeviceItems.filter((device) => device.productionStatus === ProductionStatus.DOWNLOADED).length,
+        printedDevices: allDeviceItems.filter((device) => device.productionStatus === ProductionStatus.PRINTED).length,
+        configuredDevices: allDeviceItems.filter((device) => device.isConfigured).length
+      },
+      storage: {
+        usedBytes: usage.usedBytes.toString(),
+        totalLimitBytes: usage.totalLimitBytes.toString(),
+        maxObjectBytes: usage.maxObjectBytes.toString(),
+        retentionDays: DEFAULT_ASSET_RETENTION_DAYS
+      },
+      singles: singleItems,
+      batches: batchItems
+    };
+  }
+
+  async markDeviceAssetDownloaded(id: string, actorUserId: string) {
+    return this.setDeviceProductionStatus(id, ProductionStatus.DOWNLOADED, actorUserId, "ADMIN_DEVICE_ASSET_DOWNLOADED");
+  }
+
+  async markDevicePrinted(id: string, actorUserId: string) {
+    return this.setDeviceProductionStatus(id, ProductionStatus.PRINTED, actorUserId, "ADMIN_DEVICE_PRINTED");
+  }
+
+  async markBatchPrinted(batchId: string, actorUserId: string) {
+    return this.setBatchProductionStatus(batchId, ProductionStatus.PRINTED, actorUserId, "ADMIN_BATCH_PRINTED");
+  }
+
+  async markBatchDownloaded(batchId: string, actorUserId: string) {
+    return this.setBatchProductionStatus(batchId, ProductionStatus.DOWNLOADED, actorUserId, "ADMIN_BATCH_DOWNLOADED");
+  }
+
+  async regenerateDeviceAssets(id: string, actorUserId: string) {
+    const device = await this.get(id);
+    const asset = await this.assets.regenerateDeviceAssets(device.id);
+
+    await this.prisma.deviceEvent.create({
+      data: {
+        deviceId: device.id,
+        eventType: DeviceEventType.ASSET_GENERATED,
+        source: "SYSTEM",
+        metadata: {
+          actorUserId,
+          action: "ADMIN_REGENERATE_ASSET",
+          assetId: asset.id
+        }
+      }
+    });
+
+    return this.get(id);
+  }
+
+  async deleteDeviceAssetFiles(id: string, actorUserId: string) {
+    const device = await this.get(id);
+    const result = await this.assets.deleteDeviceAssetFiles(device.id);
+
+    await this.prisma.$transaction(async (tx) => {
+      await this.recordAdminDeviceChange(tx, actorUserId, device.id, "ADMIN_DEVICE_ASSET_DELETE", device, {
+        alias: device.alias,
+        targetUrl: device.targetUrl,
+        productionStatus: ProductionStatus.CREATED,
+        operationalStatus: device.operationalStatus,
+        businessId: device.businessId,
+        assignmentStatus: device.assignmentStatus
+      });
+
+      await tx.deviceEvent.create({
+        data: {
+          deviceId: device.id,
+          eventType: DeviceEventType.STATUS_CHANGE,
+          source: "SYSTEM",
+          metadata: {
+            actorUserId,
+            action: "ADMIN_DELETE_ASSET_FILES",
+            deletedKeys: result.deletedKeys
+          }
+        }
+      });
+    });
+
+    return this.get(id);
+  }
+
+  async cleanupExpiredAssets(retentionDays = DEFAULT_ASSET_RETENTION_DAYS, actorUserId: string) {
+    const result = await this.assets.cleanupExpiredAssets(retentionDays);
+
+    await this.prisma.auditLog.create({
+      data: {
+        actorUserId,
+        action: "ADMIN_EXPIRED_ASSETS_CLEANUP",
+        before: {
+          retentionDays
+        },
+        after: {
+          deletedAssets: result.deletedAssets,
+          deletedKeys: result.deletedKeys.length,
+          cutoff: result.cutoff.toISOString()
+        }
+      }
+    });
+
+    return this.listProduction();
   }
 
   async updateAdminDevice(id: string, dto: UpdateAdminDeviceDto, actorUserId: string) {
@@ -466,6 +624,174 @@ export class DevicesService {
     });
 
     return this.getClientDevice(device.id, userId);
+  }
+
+  private async setDeviceProductionStatus(
+    id: string,
+    productionStatus: ProductionStatus,
+    actorUserId: string,
+    action: string
+  ) {
+    const device = await this.get(id);
+
+    await this.prisma.$transaction(async (tx) => {
+      await tx.device.update({
+        where: { id: device.id },
+        data: {
+          productionStatus
+        }
+      });
+
+      await this.recordAdminDeviceChange(tx, actorUserId, device.id, action, device, {
+        alias: device.alias,
+        targetUrl: device.targetUrl,
+        productionStatus,
+        operationalStatus: device.operationalStatus,
+        businessId: device.businessId,
+        assignmentStatus: device.assignmentStatus
+      });
+
+      await tx.deviceEvent.create({
+        data: {
+          deviceId: device.id,
+          eventType: productionStatus === ProductionStatus.DOWNLOADED ? DeviceEventType.ASSET_DOWNLOADED : DeviceEventType.STATUS_CHANGE,
+          source: "SYSTEM",
+          metadata: {
+            actorUserId,
+            action
+          }
+        }
+      });
+    });
+
+    return this.get(device.id);
+  }
+
+  private async setBatchProductionStatus(
+    batchId: string,
+    productionStatus: ProductionStatus,
+    actorUserId: string,
+    action: string
+  ) {
+    const batch = await this.prisma.deviceBatch.findUnique({
+      where: { id: batchId },
+      include: {
+        devices: true
+      }
+    });
+
+    if (!batch) {
+      throw new NotFoundException({
+        error: {
+          code: "BATCH_NOT_FOUND",
+          message: "Batch not found"
+        }
+      });
+    }
+
+    await this.prisma.$transaction(async (tx) => {
+      await tx.device.updateMany({
+        where: { batchId },
+        data: {
+          productionStatus
+        }
+      });
+
+      await Promise.all(
+        batch.devices.map((device) =>
+          tx.deviceEvent.create({
+            data: {
+              deviceId: device.id,
+              eventType: productionStatus === ProductionStatus.DOWNLOADED ? DeviceEventType.ASSET_DOWNLOADED : DeviceEventType.STATUS_CHANGE,
+              source: "SYSTEM",
+              metadata: {
+                actorUserId,
+                action,
+                batchId
+              }
+            }
+          })
+        )
+      );
+    });
+
+    return this.listProduction();
+  }
+
+  private toProductionDeviceItem(
+    device: Prisma.DeviceGetPayload<{
+      include: typeof DEVICE_INCLUDE & {
+        printAssets: {
+          orderBy: { createdAt: "desc" };
+          take: 1;
+        };
+      };
+    }>
+  ) {
+    const latestAsset = device.printAssets[0] ?? null;
+
+    return {
+      id: device.id,
+      publicCode: device.publicCode,
+      deviceTypeName: device.deviceType.name,
+      businessName: device.business?.businessName ?? null,
+      batchId: device.batchId,
+      productionStatus: device.productionStatus,
+      assignmentStatus: device.assignmentStatus,
+      operationalStatus: device.operationalStatus,
+      isConfigured: Boolean(device.businessId && device.targetUrl),
+      hasAsset: Boolean(latestAsset?.pdfKey || latestAsset?.pngKey || latestAsset?.svgKey || device.qrImageKey),
+      latestAsset: latestAsset
+        ? {
+            id: latestAsset.id,
+            pdfKey: latestAsset.pdfKey,
+            pngKey: latestAsset.pngKey,
+            svgKey: latestAsset.svgKey,
+            createdAt: latestAsset.createdAt
+          }
+        : null,
+      createdAt: device.createdAt,
+      updatedAt: device.updatedAt
+    };
+  }
+
+  private toProductionBatchItem(
+    batch: Prisma.DeviceBatchGetPayload<{
+      include: {
+        devices: {
+          orderBy: { publicCode: "asc" };
+          include: typeof DEVICE_INCLUDE & {
+            printAssets: {
+              orderBy: { createdAt: "desc" };
+              take: 1;
+            };
+          };
+        };
+      };
+    }>
+  ) {
+    const devices = batch.devices.map((device) => this.toProductionDeviceItem(device));
+    const generated = devices.filter((device) => device.hasAsset).length;
+    const downloaded = devices.filter((device) => device.productionStatus === ProductionStatus.DOWNLOADED).length;
+    const printed = devices.filter((device) => device.productionStatus === ProductionStatus.PRINTED).length;
+    const configured = devices.filter((device) => device.isConfigured).length;
+
+    return {
+      id: batch.id,
+      prefix: batch.prefix,
+      quantity: batch.quantity,
+      status: batch.status,
+      createdAt: batch.createdAt,
+      updatedAt: batch.updatedAt,
+      counts: {
+        total: devices.length,
+        generated,
+        downloaded,
+        printed,
+        configured
+      },
+      devices
+    };
   }
 
   private async getActiveDeviceType(id: string, tx: Prisma.TransactionClient) {

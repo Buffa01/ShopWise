@@ -7,6 +7,7 @@ import { JwtAuthGuard } from "../../common/guards/jwt-auth.guard";
 import { RolesGuard } from "../../common/guards/roles.guard";
 import type { CurrentUser } from "../../common/types/authenticated-request";
 import { AssignDeviceDto } from "./dto/assign-device.dto";
+import { CleanupExpiredAssetsDto } from "./dto/cleanup-expired-assets.dto";
 import { CreateDeviceBatchDto } from "./dto/create-device-batch.dto";
 import { CreateDeviceDto } from "./dto/create-device.dto";
 import { ListDevicesQueryDto } from "./dto/list-devices-query.dto";
@@ -22,6 +23,26 @@ export class DevicesController {
   @Get()
   list(@Query() query: ListDevicesQueryDto) {
     return this.devicesService.list(query);
+  }
+
+  @Get("production")
+  listProduction() {
+    return this.devicesService.listProduction();
+  }
+
+  @Post("assets/cleanup-expired")
+  cleanupExpiredAssets(@Body() dto: CleanupExpiredAssetsDto, @CurrentUserDecorator() currentUser: CurrentUser) {
+    return this.devicesService.cleanupExpiredAssets(dto.retentionDays, currentUser.id);
+  }
+
+  @Post("batches/:batchId/mark-printed")
+  markBatchPrinted(@Param("batchId") batchId: string, @CurrentUserDecorator() currentUser: CurrentUser) {
+    return this.devicesService.markBatchPrinted(batchId, currentUser.id);
+  }
+
+  @Post("batches/:batchId/mark-downloaded")
+  markBatchDownloaded(@Param("batchId") batchId: string, @CurrentUserDecorator() currentUser: CurrentUser) {
+    return this.devicesService.markBatchDownloaded(batchId, currentUser.id);
   }
 
   @Get(":id")
@@ -54,6 +75,26 @@ export class DevicesController {
     response.setHeader("Content-Type", "application/pdf");
     response.setHeader("Content-Disposition", `attachment; filename=\"${result.publicCode}-sticker.pdf\"`);
     return response.send(result.file);
+  }
+
+  @Post(":id/assets/mark-downloaded")
+  markAssetDownloaded(@Param("id") id: string, @CurrentUserDecorator() currentUser: CurrentUser) {
+    return this.devicesService.markDeviceAssetDownloaded(id, currentUser.id);
+  }
+
+  @Post(":id/assets/regenerate")
+  regenerateAsset(@Param("id") id: string, @CurrentUserDecorator() currentUser: CurrentUser) {
+    return this.devicesService.regenerateDeviceAssets(id, currentUser.id);
+  }
+
+  @Post(":id/assets/delete")
+  deleteAssetFiles(@Param("id") id: string, @CurrentUserDecorator() currentUser: CurrentUser) {
+    return this.devicesService.deleteDeviceAssetFiles(id, currentUser.id);
+  }
+
+  @Post(":id/mark-printed")
+  markPrinted(@Param("id") id: string, @CurrentUserDecorator() currentUser: CurrentUser) {
+    return this.devicesService.markDevicePrinted(id, currentUser.id);
   }
 
   @Get("batches/:batchId/assets/sheet")
