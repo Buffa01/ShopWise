@@ -2096,6 +2096,224 @@ a {
   font-size: 38px;
 }
 
+.client-metrics-hero {
+  align-items: stretch;
+  background:
+    radial-gradient(circle at 86% 22%, rgba(0, 200, 83, 0.2), transparent 34%),
+    var(--client-panel-solid);
+  border: 1px solid var(--client-border);
+  border-radius: 34px;
+  box-shadow: var(--client-shadow);
+  display: grid;
+  gap: 22px;
+  grid-template-columns: minmax(0, 1fr) minmax(300px, 0.62fr);
+  padding: clamp(26px, 4vw, 44px);
+}
+
+.client-metrics-hero h2 {
+  color: var(--client-ink);
+  font-size: clamp(62px, 11vw, 128px);
+  line-height: 0.9;
+  margin: 4px 0 16px;
+}
+
+.client-metrics-hero p {
+  color: var(--client-muted);
+  font-size: 18px;
+  line-height: 1.55;
+  margin: 0;
+  max-width: 620px;
+}
+
+.client-metrics-hero-stats {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: 1fr;
+}
+
+.client-metric-kpis {
+  margin: 0;
+}
+
+.client-metrics-panel {
+  background: var(--client-panel-solid);
+  border: 1px solid var(--client-border);
+  border-radius: 30px;
+  box-shadow: 0 16px 42px rgba(9, 21, 16, 0.05);
+  display: grid;
+  gap: 22px;
+  padding: clamp(22px, 4vw, 34px);
+}
+
+.client-metrics-chart {
+  align-items: end;
+  background: var(--client-bg);
+  border: 1px solid var(--client-border);
+  border-radius: 24px;
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(14, minmax(0, 1fr));
+  min-height: 260px;
+  padding: 20px;
+}
+
+.client-metrics-bar {
+  align-items: center;
+  display: grid;
+  gap: 8px;
+  grid-template-rows: 1fr auto auto;
+  height: 220px;
+  min-width: 0;
+  text-align: center;
+}
+
+.client-metrics-bar span {
+  align-self: end;
+  background: linear-gradient(180deg, var(--client-green) 0%, #047857 100%);
+  border-radius: 999px 999px 8px 8px;
+  box-shadow: 0 12px 28px rgba(0, 200, 83, 0.18);
+  display: block;
+  justify-self: stretch;
+  min-height: 2px;
+}
+
+.client-metrics-bar small,
+.client-metrics-bar strong {
+  color: var(--client-muted);
+  font-size: 11px;
+  font-weight: 900;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.client-metrics-bar strong {
+  color: var(--client-ink);
+  font-size: 13px;
+}
+
+.client-metrics-split {
+  align-items: start;
+  display: grid;
+  gap: 18px;
+  grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
+}
+
+.client-top-device-list,
+.client-interaction-list {
+  display: grid;
+  gap: 12px;
+}
+
+.client-top-device-row,
+.client-interaction-row {
+  align-items: center;
+  background: var(--client-bg);
+  border: 1px solid var(--client-border);
+  border-radius: 20px;
+  color: var(--client-ink);
+  display: grid;
+  gap: 14px;
+  min-height: 78px;
+  padding: 14px;
+  text-decoration: none;
+}
+
+.client-top-device-row {
+  grid-template-columns: auto minmax(0, 1fr) auto;
+}
+
+.client-interaction-row {
+  grid-template-columns: auto minmax(0, 1fr) minmax(112px, auto);
+}
+
+.client-top-device-row > span,
+.client-interaction-row > span {
+  align-items: center;
+  background: var(--client-soft);
+  border-radius: 18px;
+  color: var(--client-green-dark);
+  display: inline-flex;
+  font-size: 13px;
+  font-weight: 950;
+  height: 48px;
+  justify-content: center;
+  width: 48px;
+}
+
+.client-top-device-row div,
+.client-interaction-row div {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.client-top-device-row strong,
+.client-interaction-row strong {
+  color: var(--client-ink);
+  font-size: 16px;
+  line-height: 1.2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.client-top-device-row small,
+.client-interaction-row small,
+.client-interaction-row time {
+  color: var(--client-muted);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.client-top-device-row b {
+  color: var(--client-ink);
+  font-size: 24px;
+}
+
+.client-interaction-row time {
+  text-align: right;
+}
+
+.client-metrics-empty {
+  align-items: center;
+  background: var(--client-bg);
+  border: 1px dashed var(--client-border);
+  border-radius: 22px;
+  display: grid;
+  gap: 10px;
+  justify-items: center;
+  min-height: 220px;
+  padding: 28px;
+  text-align: center;
+}
+
+.client-metrics-empty span {
+  align-items: center;
+  background: var(--client-soft);
+  border-radius: 20px;
+  color: var(--client-green-dark);
+  display: inline-flex;
+  font-size: 28px;
+  font-weight: 950;
+  height: 72px;
+  justify-content: center;
+  width: 72px;
+}
+
+.client-metrics-empty strong {
+  color: var(--client-ink);
+  font-size: 22px;
+}
+
+.client-metrics-empty p {
+  color: var(--client-muted);
+  line-height: 1.5;
+  margin: 0;
+  max-width: 420px;
+}
+
 .client-shell .detail-grid div {
   padding: 22px;
 }
@@ -2161,7 +2379,9 @@ a {
 
   .client-device-detail-hero,
   .client-device-workspace,
-  .client-claim-grid {
+  .client-claim-grid,
+  .client-metrics-hero,
+  .client-metrics-split {
     grid-template-columns: 1fr;
   }
 
@@ -2211,6 +2431,8 @@ a {
   .client-device-card,
   .client-device-detail-hero,
   .client-device-metrics-panel,
+  .client-metrics-hero,
+  .client-metrics-panel,
   .client-config-card,
   .client-device-side-panel,
   .client-empty-state,
@@ -2261,6 +2483,27 @@ a {
   .client-device-card-footer {
     align-items: stretch;
     flex-direction: column;
+  }
+
+  .client-metrics-chart {
+    gap: 6px;
+    grid-template-columns: repeat(14, 34px);
+    overflow-x: auto;
+    padding: 16px;
+  }
+
+  .client-metrics-bar {
+    min-width: 30px;
+  }
+
+  .client-interaction-row {
+    align-items: start;
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .client-interaction-row time {
+    grid-column: 2;
+    text-align: left;
   }
 
   .client-device-summary-card {
