@@ -33,31 +33,58 @@ function EditDeviceTypeContent() {
   }, [params.id]);
 
   return (
-    <main className="dashboard-shell">
-      <div className="page-header">
+    <main className="dashboard-shell admin-device-type-edit-page">
+      <section className="admin-device-type-edit-hero">
         <div>
-          <p className="eyebrow">{t("common.admin")}</p>
-          <h1>{t("admin.editDeviceType")}</h1>
+          <p className="eyebrow">{t("admin.templatesAndPrint")}</p>
+          <h1>{deviceType?.name ?? t("admin.editDeviceType")}</h1>
+          <p>{t("admin.editDeviceTypeDescription")}</p>
         </div>
-        <Link href="/admin/device-types">{t("common.back")}</Link>
-      </div>
+        <div className="admin-device-type-edit-actions">
+          <Link className="admin-secondary-action" href="/admin/device-types">
+            {t("common.back")}
+          </Link>
+          <Link className="admin-secondary-action" href="/admin/production">
+            {t("admin.production")}
+          </Link>
+        </div>
+      </section>
 
       {error ? <p className="form-error">{error}</p> : null}
       {!deviceType && !error ? <p>{t("common.loading")}</p> : null}
 
       {deviceType ? (
-        <DeviceTypeForm
-          initialValue={deviceType}
-          onSubmit={async (input) => {
-            const updated = await updateDeviceType(deviceType.id, input);
-            setDeviceType(updated);
-            router.refresh();
-          }}
-          submitLabel={t("admin.saveChanges")}
-        />
+        <section className="admin-device-type-overview">
+          <DeviceTypeFact label={t("admin.slug")} value={deviceType.slug} />
+          <DeviceTypeFact label={t("admin.defaultPrefix")} value={deviceType.defaultPrefix ?? t("admin.noPrefix")} />
+          <DeviceTypeFact label={t("admin.designAsset")} value={deviceType.baseDesignKey ? t("admin.designReady") : t("admin.designMissing")} />
+          <DeviceTypeFact label={t("common.devices")} value={`${deviceType._count?.devices ?? 0}`} />
+        </section>
       ) : null}
 
-      {deviceType ? <StickerTemplateEditor deviceType={deviceType} onChange={setDeviceType} /> : null}
+      {deviceType ? (
+        <section className="admin-device-type-edit-grid">
+          <DeviceTypeForm
+            initialValue={deviceType}
+            onSubmit={async (input) => {
+              const updated = await updateDeviceType(deviceType.id, input);
+              setDeviceType(updated);
+              router.refresh();
+            }}
+            submitLabel={t("admin.saveChanges")}
+          />
+          <StickerTemplateEditor deviceType={deviceType} onChange={setDeviceType} />
+        </section>
+      ) : null}
     </main>
+  );
+}
+
+function DeviceTypeFact({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="admin-device-type-fact">
+      <span>{label}</span>
+      <strong>{value}</strong>
+    </div>
   );
 }
