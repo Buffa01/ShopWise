@@ -1,5 +1,5 @@
 app = "shopwise-api"
-primary_region = "mia"
+primary_region = "gru"
 kill_signal = "SIGINT"
 kill_timeout = "5s"
 
@@ -12,9 +12,10 @@ kill_timeout = "5s"
 [env]
   API_PORT = "8080"
   NODE_ENV = "production"
-  SHORT_LINK_BASE_URL = "https://sw.uy"
-  STORAGE_DRIVER = "local"
-  STORAGE_LOCAL_DIR = "/data/storage"
+  SHORT_LINK_BASE_URL = "https://sw.shopwise.uy"
+  STORAGE_DRIVER = "r2"
+  R2_BUCKET = "shopwise-assets-production"
+  R2_ENDPOINT = "https://7f87a1cd149109638b49567feefdeb28.r2.cloudflarestorage.com"
   STORAGE_TOTAL_LIMIT_BYTES = "9000000000"
   STORAGE_MAX_OBJECT_BYTES = "52428800"
   RATE_LIMIT_REDIRECT_WINDOW_MS = "60000"
@@ -41,10 +42,6 @@ kill_timeout = "5s"
     grace_period = "10s"
     method = "GET"
     path = "/v1/health"
-
-[[mounts]]
-  source = "shopwise_storage"
-  destination = "/data"
 
 [[vm]]
   memory = "512mb"
